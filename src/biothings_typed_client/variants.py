@@ -2,6 +2,8 @@ from typing import Any, Dict, List, Optional, Union, Generator
 from pydantic import BaseModel, Field, ConfigDict
 from biothings_client import get_client, get_async_client
 from pathlib import Path
+import pandas as pd
+from .abstract_client import AbstractClient, AbstractClientAsync
 
 class VCFInfo(BaseModel):
     """VCF information for a variant"""
@@ -146,12 +148,15 @@ class VariantResponse(BaseModel):
             self.snpeff is not None
         ])
 
-class TypedVariantClient:
+class VariantClient(AbstractClient[VariantResponse]):
     """A typed wrapper around the BioThings variant client (synchronous)"""
     
     def __init__(self):
-        self._client = get_client("variant")
+        super().__init__("variant")
         
+    def _response_model(self) -> type[VariantResponse]:
+        return VariantResponse
+
     def getvariant(
         self,
         variant_id: str,
@@ -211,7 +216,7 @@ class TypedVariantClient:
         as_dataframe: bool = False,
         df_index: bool = True,
         **kwargs
-    ) -> Union[Dict[str, Any], 'pandas.DataFrame']:
+    ) -> Union[Dict[str, Any], pd.DataFrame]:
         """
         Query variants
         
@@ -253,7 +258,7 @@ class TypedVariantClient:
         as_dataframe: bool = False,
         df_index: bool = True,
         **kwargs
-    ) -> Union[List[Dict[str, Any]], 'pandas.DataFrame']:
+    ) -> Union[List[Dict[str, Any]], pd.DataFrame]:
         """
         Query for many variants
         
@@ -305,37 +310,50 @@ class TypedVariantClient:
         """
         return self._client.metadata()
 
-class TypedVariantClientAsync:
+class VariantClientAsync(AbstractClientAsync[VariantResponse]):
     """A typed wrapper around the BioThings variant client (asynchronous)"""
     
     def __init__(self):
-        self._client = get_async_client("variant")
+        super().__init__("variant")
         
+    def _response_model(self) -> type[VariantResponse]:
+        return VariantResponse
+
     async def __aenter__(self):
         return self
         
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if hasattr(self._client, 'close'):
-            await self._client.close()
+        await self.close()
             
     async def close(self):
         """Close the client connection"""
-        if hasattr(self._client, 'close'):
-            await self._client.close()
-            
+        if not self._closed and hasattr(self._client, 'close'):
+            try:
+                await self._client.close()
+            except Exception:
+                # Ignore any errors during cleanup
+                pass
+            finally:
+                self._closed = True
+                
     def __del__(self):
         """Cleanup when the object is deleted"""
-        if hasattr(self._client, 'close'):
+        if not self._closed and hasattr(self._client, 'close'):
             import asyncio
             try:
                 loop = asyncio.get_event_loop()
                 if loop.is_running():
+                    # If loop is running, create a task to close the client
                     loop.create_task(self._client.close())
                 else:
+                    # If loop is not running, run the close operation
                     loop.run_until_complete(self._client.close())
             except Exception:
-                pass  # Ignore cleanup errors during garbage collection
-
+                # Ignore any errors during cleanup
+                pass
+            finally:
+                self._closed = True
+            
     async def getvariant(
         self,
         variant_id: str,
@@ -395,7 +413,7 @@ class TypedVariantClientAsync:
         as_dataframe: bool = False,
         df_index: bool = True,
         **kwargs
-    ) -> Union[Dict[str, Any], 'pandas.DataFrame']:
+    ) -> Union[Dict[str, Any], pd.DataFrame]:
         """
         Query variants
         
@@ -437,7 +455,7 @@ class TypedVariantClientAsync:
         as_dataframe: bool = False,
         df_index: bool = True,
         **kwargs
-    ) -> Union[List[Dict[str, Any]], 'pandas.DataFrame']:
+    ) -> Union[List[Dict[str, Any]], pd.DataFrame]:
         """
         Query for many variants
         
@@ -491,7 +509,7 @@ class TypedVariantClientAsync:
 
 if __name__ == "__main__":
     # Example usage for sync client
-    client = TypedVariantClient()
+    client = VariantClient()
     variant = client.getvariant("chr7:g.140453134T>C")
     if variant:
         print(f"Variant ID: {variant.get_variant_id()}")
@@ -504,7 +522,7 @@ if __name__ == "__main__":
     import asyncio
     
     async def main():
-        client = TypedVariantClientAsync()
+        client = VariantClientAsync()
         variant = await client.getvariant("chr7:g.140453134T>C")
         if variant:
             print(f"Variant ID: {variant.get_variant_id()}")

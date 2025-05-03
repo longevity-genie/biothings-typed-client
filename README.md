@@ -30,15 +30,10 @@ pip install biothings-typed-client
 
 2. Install the package:
    ```bash
-   uv install biothings-typed-client
+   uv sync
    ```
 
-3. For development, you can install with all dependencies:
-   ```bash
-   uv install -e ".[dev]"
-   ```
-
-4. To create a virtual environment and install dependencies:
+3. To create a virtual environment and install dependencies:
    ```bash
    uv venv
    source .venv/bin/activate  # On Unix/macOS
@@ -52,10 +47,10 @@ pip install biothings-typed-client
 ### Synchronous Client
 
 ```python
-from biothings_typed_client.variants import TypedVariantClient
+from biothings_typed_client.variants import VariantClient
 
 # Initialize the client
-client = TypedVariantClient()
+client = VariantClient()
 
 # Get a single variant
 variant = client.getvariant("chr7:g.140453134T>C")
@@ -81,11 +76,11 @@ for hit in results["hits"]:
 
 ```python
 import asyncio
-from biothings_typed_client.variants import TypedVariantClientAsync
+from biothings_typed_client.variants import VariantClientAsync
 
 async def main():
     # Initialize the client
-    client = TypedVariantClientAsync()
+    client = VariantClientAsync()
     
     # Get a single variant
     variant = await client.getvariant("chr7:g.140453134T>C")
@@ -107,7 +102,7 @@ asyncio.run(main())
 
 The library currently provides the following typed clients:
 
-- `TypedVariantClient` / `TypedVariantClientAsync`: For accessing variant data
+- `VariantClient` / `VariantClientAsync`: For accessing variant data
 - More clients coming soon...
 
 ## Response Models
