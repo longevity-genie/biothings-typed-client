@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Optional, Union, TypeVar, Generic
 from pydantic import BaseModel
 from biothings_client import get_client, get_async_client
+import pandas as pd
 
 T = TypeVar('T', bound=BaseModel)
 
@@ -97,7 +98,7 @@ class AbstractClient(Generic[T]):
         as_dataframe: bool = False,
         df_index: bool = True,
         **kwargs
-    ) -> Union[Dict[str, Any], 'pd.DataFrame']:
+    ) -> Union[Dict[str, Any], pd.DataFrame]:
         """
         Query items
         
@@ -114,9 +115,22 @@ class AbstractClient(Generic[T]):
             **kwargs: Additional arguments passed to the underlying client
             
         Returns:
-            Query results as a dictionary or pandas DataFrame
+            Query results as a dictionary or pandas DataFrame. The dictionary will have the structure:
+            {
+                "hits": [
+                    {
+                        "_id": "identifier",
+                        "_score": float,
+                        # ... other fields ...
+                    }
+                ],
+                "max_score": float,
+                "took": int,
+                "total": int
+            }
+            If no results are found, returns an empty dictionary with the same structure.
         """
-        return self._client.query(
+        result = self._client.query(
             q,
             fields=fields,
             size=size,
@@ -128,6 +142,38 @@ class AbstractClient(Generic[T]):
             df_index=df_index,
             **kwargs
         )
+        
+        # Handle None result
+        if result is None:
+            return {
+                "hits": [],
+                "max_score": 0.0,
+                "took": 0,
+                "total": 0
+            }
+            
+        # Ensure result has the expected structure
+        if not isinstance(result, dict):
+            return {
+                "hits": [],
+                "max_score": 0.0,
+                "took": 0,
+                "total": 0
+            }
+            
+        if "hits" not in result:
+            result["hits"] = []
+            
+        if "max_score" not in result:
+            result["max_score"] = 0.0
+            
+        if "took" not in result:
+            result["took"] = 0
+            
+        if "total" not in result:
+            result["total"] = len(result.get("hits", []))
+            
+        return result
 
     def querymany(
         self,
@@ -139,14 +185,14 @@ class AbstractClient(Generic[T]):
         as_dataframe: bool = False,
         df_index: bool = True,
         **kwargs
-    ) -> Union[List[Dict[str, Any]], 'pd.DataFrame']:
+    ) -> Union[List[Dict[str, Any]], pd.DataFrame]:
         """
-        Query for many items
+        Query multiple items
         
         Args:
-            query_list: List of query terms or comma-separated string
+            query_list: List of query strings or comma-separated string
             scopes: Fields to search in
-            fields: Fields to return
+            fields: Specific fields to return
             species: Species names or taxonomy ids
             email: User email for tracking usage
             as_dataframe: Return results as pandas DataFrame
@@ -154,14 +200,27 @@ class AbstractClient(Generic[T]):
             **kwargs: Additional arguments passed to the underlying client
             
         Returns:
-            List of query results or pandas DataFrame
+            List of query results or pandas DataFrame. Each result will have the structure:
+            {
+                "hits": [
+                    {
+                        "_id": "identifier",
+                        "_score": float,
+                        # ... other fields ...
+                    }
+                ],
+                "max_score": float,
+                "took": int,
+                "total": int
+            }
+            If no results are found for a query, returns an empty dictionary with the same structure.
         """
         if isinstance(query_list, str):
             query_list = query_list.split(",")
         elif isinstance(query_list, tuple):
             query_list = list(query_list)
             
-        return self._client.querymany(
+        results = self._client.querymany(
             query_list,
             scopes=scopes,
             fields=fields,
@@ -169,6 +228,50 @@ class AbstractClient(Generic[T]):
             email=email,
             **kwargs
         )
+        
+        # Handle None or invalid results
+        if results is None:
+            return []
+            
+        if not isinstance(results, list):
+            return []
+            
+        # Ensure each result has the expected structure
+        processed_results = []
+        for result in results:
+            if result is None:
+                processed_results.append({
+                    "hits": [],
+                    "max_score": 0.0,
+                    "took": 0,
+                    "total": 0
+                })
+                continue
+                
+            if not isinstance(result, dict):
+                processed_results.append({
+                    "hits": [],
+                    "max_score": 0.0,
+                    "took": 0,
+                    "total": 0
+                })
+                continue
+                
+            if "hits" not in result:
+                result["hits"] = []
+                
+            if "max_score" not in result:
+                result["max_score"] = 0.0
+                
+            if "took" not in result:
+                result["took"] = 0
+                
+            if "total" not in result:
+                result["total"] = len(result.get("hits", []))
+                
+            processed_results.append(result)
+            
+        return processed_results
 
     def get_fields(self, search_term: Optional[str] = None) -> Dict[str, Any]:
         """
@@ -324,7 +427,7 @@ class AbstractClientAsync(Generic[T]):
         as_dataframe: bool = False,
         df_index: bool = True,
         **kwargs
-    ) -> Union[Dict[str, Any], 'pd.DataFrame']:
+    ) -> Union[Dict[str, Any], pd.DataFrame]:
         """
         Query items
         
@@ -341,9 +444,22 @@ class AbstractClientAsync(Generic[T]):
             **kwargs: Additional arguments passed to the underlying client
             
         Returns:
-            Query results as a dictionary or pandas DataFrame
+            Query results as a dictionary or pandas DataFrame. The dictionary will have the structure:
+            {
+                "hits": [
+                    {
+                        "_id": "identifier",
+                        "_score": float,
+                        # ... other fields ...
+                    }
+                ],
+                "max_score": float,
+                "took": int,
+                "total": int
+            }
+            If no results are found, returns an empty dictionary with the same structure.
         """
-        return await self._client.query(
+        result = await self._client.query(
             q,
             fields=fields,
             size=size,
@@ -355,6 +471,38 @@ class AbstractClientAsync(Generic[T]):
             df_index=df_index,
             **kwargs
         )
+        
+        # Handle None result
+        if result is None:
+            return {
+                "hits": [],
+                "max_score": 0.0,
+                "took": 0,
+                "total": 0
+            }
+            
+        # Ensure result has the expected structure
+        if not isinstance(result, dict):
+            return {
+                "hits": [],
+                "max_score": 0.0,
+                "took": 0,
+                "total": 0
+            }
+            
+        if "hits" not in result:
+            result["hits"] = []
+            
+        if "max_score" not in result:
+            result["max_score"] = 0.0
+            
+        if "took" not in result:
+            result["took"] = 0
+            
+        if "total" not in result:
+            result["total"] = len(result.get("hits", []))
+            
+        return result
 
     async def querymany(
         self,
@@ -366,14 +514,14 @@ class AbstractClientAsync(Generic[T]):
         as_dataframe: bool = False,
         df_index: bool = True,
         **kwargs
-    ) -> Union[List[Dict[str, Any]], 'pd.DataFrame']:
+    ) -> Union[List[Dict[str, Any]], pd.DataFrame]:
         """
-        Query for many items
+        Query multiple items
         
         Args:
-            query_list: List of query terms or comma-separated string
+            query_list: List of query strings or comma-separated string
             scopes: Fields to search in
-            fields: Fields to return
+            fields: Specific fields to return
             species: Species names or taxonomy ids
             email: User email for tracking usage
             as_dataframe: Return results as pandas DataFrame
@@ -381,14 +529,27 @@ class AbstractClientAsync(Generic[T]):
             **kwargs: Additional arguments passed to the underlying client
             
         Returns:
-            List of query results or pandas DataFrame
+            List of query results or pandas DataFrame. Each result will have the structure:
+            {
+                "hits": [
+                    {
+                        "_id": "identifier",
+                        "_score": float,
+                        # ... other fields ...
+                    }
+                ],
+                "max_score": float,
+                "took": int,
+                "total": int
+            }
+            If no results are found for a query, returns an empty dictionary with the same structure.
         """
         if isinstance(query_list, str):
             query_list = query_list.split(",")
         elif isinstance(query_list, tuple):
             query_list = list(query_list)
             
-        return await self._client.querymany(
+        results = await self._client.querymany(
             query_list,
             scopes=scopes,
             fields=fields,
@@ -396,6 +557,50 @@ class AbstractClientAsync(Generic[T]):
             email=email,
             **kwargs
         )
+        
+        # Handle None or invalid results
+        if results is None:
+            return []
+            
+        if not isinstance(results, list):
+            return []
+            
+        # Ensure each result has the expected structure
+        processed_results = []
+        for result in results:
+            if result is None:
+                processed_results.append({
+                    "hits": [],
+                    "max_score": 0.0,
+                    "took": 0,
+                    "total": 0
+                })
+                continue
+                
+            if not isinstance(result, dict):
+                processed_results.append({
+                    "hits": [],
+                    "max_score": 0.0,
+                    "took": 0,
+                    "total": 0
+                })
+                continue
+                
+            if "hits" not in result:
+                result["hits"] = []
+                
+            if "max_score" not in result:
+                result["max_score"] = 0.0
+                
+            if "took" not in result:
+                result["took"] = 0
+                
+            if "total" not in result:
+                result["total"] = len(result.get("hits", []))
+                
+            processed_results.append(result)
+            
+        return processed_results
 
     async def get_fields(self, search_term: Optional[str] = None) -> Dict[str, Any]:
         """

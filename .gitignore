@@ -176,3 +176,4 @@ cython_debug/
 mychem_cache
 mygene_cache
 myvariant_cache
+mytaxon_cache

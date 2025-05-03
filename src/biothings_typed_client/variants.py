@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, Field, ConfigDict
 import pandas as pd
-from .abstract_client import AbstractClient, AbstractClientAsync
+from biothings_typed_client.abstract_client import AbstractClient, AbstractClientAsync
 
 class VCFInfo(BaseModel):
     """VCF information for a variant"""
@@ -210,12 +210,74 @@ class VariantResponse(BaseModel):
         ])
 
 class VariantClient(AbstractClient[VariantResponse]):
-    """A typed wrapper around the BioThings variant client (synchronous)"""
+    """
+    A typed wrapper around the BioThings variant client (synchronous).
+    
+    This client provides methods to query and retrieve variant information from the MyVariant.info API.
+    It supports various operations including getting single variants, batch queries, and field-specific searches.
+    
+    Example:
+        ```python
+        from biothings_typed_client.variants import VariantClient
+        
+        # Initialize the client
+        client = VariantClient()
+        
+        # Get a single variant
+        variant = client.getvariant("chr7:g.140453134T>C")
+        if variant:
+            print(f"Variant ID: {variant.get_variant_id()}")
+            print(f"Has clinical significance: {variant.has_clinical_significance()}")
+            
+        # Query variants using different syntax
+        # Simple queries
+        results = client.query("rs58991260")
+        results = client.query("chr1:69000-70000")
+        
+        # Fielded queries
+        results = client.query("dbsnp.vartype:snp")
+        results = client.query("dbnsfp.polyphen2.hdiv.pred:(D P)")
+        results = client.query("dbnsfp.polyphen2.hdiv.pred:(D OR P)")
+        results = client.query("_exists_:dbsnp")
+        results = client.query("_missing_:exac")
+        
+        # Range queries
+        results = client.query("dbnsfp.polyphen2.hdiv.score:>0.99")
+        results = client.query("dbnsfp.polyphen2.hdiv.score:>=0.99")
+        results = client.query("exac.af:<0.00001")
+        results = client.query("exac.af:<=0.00001")
+        results = client.query("exac.ac.ac_adj:[76640 TO 80000]")
+        results = client.query("exac.ac.ac_adj:{76640 TO 80000}")
+        
+        # Wildcard queries
+        results = client.query("dbnsfp.genename:CDK?")
+        results = client.query("dbnsfp.genename:CDK*")
+        
+        # Boolean operators
+        results = client.query("_exists_:dbsnp AND dbsnp.vartype:snp")
+        results = client.query("dbsnp.vartype:snp OR dbsnp.vartype:indel")
+        results = client.query("_exists_:dbsnp AND NOT dbsnp.vartype:indel")
+        results = client.query("_exists_:dbsnp AND (NOT dbsnp.vartype:indel)")
+        ```
+    """
     
     def __init__(self, caching: bool = True):
+        """
+        Initialize the variant client.
+        
+        Args:
+            caching: Whether to enable response caching. Defaults to True.
+                    When enabled, responses are cached to improve performance for repeated queries.
+        """
         super().__init__("variant", caching=caching)
         
     def _response_model(self) -> type[VariantResponse]:
+        """
+        Get the response model class for this client.
+        
+        Returns:
+            The VariantResponse class used for parsing API responses
+        """
         return VariantResponse
 
     def getvariant(
@@ -225,15 +287,34 @@ class VariantClient(AbstractClient[VariantResponse]):
         **kwargs
     ) -> Optional[VariantResponse]:
         """
-        Get variant information by ID
+        Get variant information by ID.
+        
+        This method retrieves detailed information about a specific variant using its identifier.
+        The variant ID can be in various formats including HGVS notation, rsID, or genomic coordinates.
         
         Args:
-            variant_id: The variant identifier (e.g. "chr7:g.140453134T>C")
-            fields: Specific fields to return
-            **kwargs: Additional arguments passed to the underlying client
-            
+            variant_id: The variant identifier (e.g. "chr7:g.140453134T>C", "rs58991260")
+            fields: Specific fields to return. Can be:
+                   - "all" (default): Return all available fields
+                   - A list of field names: Return only specified fields
+                   - A comma-separated string: Return only specified fields
+            **kwargs: Additional arguments passed to the underlying client:
+                     - size: Maximum number of results to return
+                     - from_: Starting position for pagination
+                     - sort: Fields to sort by
+                     - facets: Fields to compute facets for
+                     
         Returns:
             VariantResponse object containing the variant information or None if not found
+            
+        Example:
+            ```python
+            # Get a variant with all fields
+            variant = client.getvariant("chr7:g.140453134T>C")
+            
+            # Get specific fields only
+            variant = client.getvariant("rs58991260", fields=["cadd.phred", "dbsnp.rsid"])
+            ```
         """
         result = self._client.getvariant(variant_id, fields=fields, **kwargs)
         if result is None:
@@ -247,15 +328,41 @@ class VariantClient(AbstractClient[VariantResponse]):
         **kwargs
     ) -> List[VariantResponse]:
         """
-        Get information for multiple variants
+        Get information for multiple variants in a single request.
+        
+        This method efficiently retrieves information for multiple variants in a single API call.
+        It supports various input formats and can handle large numbers of variants.
         
         Args:
-            variant_ids: List of variant identifiers or comma-separated string
-            fields: Specific fields to return
-            **kwargs: Additional arguments passed to the underlying client
-            
+            variant_ids: List of variant identifiers or comma-separated string.
+                        Can include HGVS notations, rsIDs, or genomic coordinates.
+            fields: Specific fields to return. Can be:
+                   - "all" (default): Return all available fields
+                   - A list of field names: Return only specified fields
+                   - A comma-separated string: Return only specified fields
+            **kwargs: Additional arguments passed to the underlying client:
+                     - size: Maximum number of results to return
+                     - from_: Starting position for pagination
+                     - sort: Fields to sort by
+                     - facets: Fields to compute facets for
+                     
         Returns:
-            List of VariantResponse objects
+            List of VariantResponse objects, one for each variant found
+            
+        Example:
+            ```python
+            # Get multiple variants using a list
+            variants = client.getvariants(["chr7:g.140453134T>C", "rs58991260"])
+            
+            # Get multiple variants using a comma-separated string
+            variants = client.getvariants("chr7:g.140453134T>C,rs58991260")
+            
+            # Get specific fields for multiple variants
+            variants = client.getvariants(
+                ["chr7:g.140453134T>C", "rs58991260"],
+                fields=["cadd.phred", "dbsnp.rsid"]
+            )
+            ```
         """
         if isinstance(variant_ids, str):
             variant_ids = variant_ids.split(",")
@@ -266,22 +373,108 @@ class VariantClient(AbstractClient[VariantResponse]):
         return [VariantResponse.model_validate(result) for result in results]
 
 class VariantClientAsync(AbstractClientAsync[VariantResponse]):
-    """A typed wrapper around the BioThings variant client (asynchronous)"""
+    """
+    An asynchronous typed wrapper around the BioThings variant client.
+    
+    This client provides the same functionality as VariantClient but with async/await support.
+    It's particularly useful for applications that need to make multiple concurrent API calls
+    or integrate with async frameworks.
+    
+    Example:
+        ```python
+        import asyncio
+        from biothings_typed_client.variants import VariantClientAsync
+        
+        async def main():
+            client = VariantClientAsync()
+            
+            # Get a single variant
+            variant = await client.getvariant("chr7:g.140453134T>C")
+            if variant:
+                print(f"Variant ID: {variant.get_variant_id()}")
+                
+            # Query variants using different syntax
+            # Simple queries
+            results = await client.query("rs58991260")
+            results = await client.query("chr1:69000-70000")
+            
+            # Fielded queries
+            results = await client.query("dbsnp.vartype:snp")
+            results = await client.query("dbnsfp.polyphen2.hdiv.pred:(D P)")
+            results = await client.query("dbnsfp.polyphen2.hdiv.pred:(D OR P)")
+            results = await client.query("_exists_:dbsnp")
+            results = await client.query("_missing_:exac")
+            
+            # Range queries
+            results = await client.query("dbnsfp.polyphen2.hdiv.score:>0.99")
+            results = await client.query("dbnsfp.polyphen2.hdiv.score:>=0.99")
+            results = await client.query("exac.af:<0.00001")
+            results = await client.query("exac.af:<=0.00001")
+            results = await client.query("exac.ac.ac_adj:[76640 TO 80000]")
+            results = await client.query("exac.ac.ac_adj:{76640 TO 80000}")
+            
+            # Wildcard queries
+            results = await client.query("dbnsfp.genename:CDK?")
+            results = await client.query("dbnsfp.genename:CDK*")
+            
+            # Boolean operators
+            results = await client.query("_exists_:dbsnp AND dbsnp.vartype:snp")
+            results = await client.query("dbsnp.vartype:snp OR dbsnp.vartype:indel")
+            results = await client.query("_exists_:dbsnp AND NOT dbsnp.vartype:indel")
+            results = await client.query("_exists_:dbsnp AND (NOT dbsnp.vartype:indel)")
+            
+            await client.close()
+            
+        asyncio.run(main())
+        ```
+    """
     
     def __init__(self, caching: bool = True):
+        """
+        Initialize the async variant client.
+        
+        Args:
+            caching: Whether to enable response caching. Defaults to True.
+                    When enabled, responses are cached to improve performance for repeated queries.
+        """
         super().__init__("variant", caching=caching)
         
     def _response_model(self) -> type[VariantResponse]:
+        """
+        Get the response model class for this client.
+        
+        Returns:
+            The VariantResponse class used for parsing API responses
+        """
         return VariantResponse
 
     async def __aenter__(self):
+        """
+        Enter the async context manager.
+        
+        Returns:
+            The client instance
+        """
         return self
         
     async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """
+        Exit the async context manager.
+        
+        Args:
+            exc_type: Exception type if an exception was raised
+            exc_val: Exception value if an exception was raised
+            exc_tb: Exception traceback if an exception was raised
+        """
         await self.close()
             
     async def close(self):
-        """Close the client connection"""
+        """
+        Close the client connection and cleanup resources.
+        
+        This method should be called when the client is no longer needed to properly
+        cleanup resources and close any open connections.
+        """
         if not self._closed and hasattr(self._client, 'close'):
             try:
                 await self._client.close()
@@ -292,7 +485,13 @@ class VariantClientAsync(AbstractClientAsync[VariantResponse]):
                 self._closed = True
                 
     def __del__(self):
-        """Cleanup when the object is deleted"""
+        """
+        Cleanup when the object is deleted.
+        
+        This method ensures that resources are properly cleaned up even if the client
+        is not explicitly closed. It attempts to close the client in a safe manner,
+        handling both running and non-running event loops.
+        """
         if not self._closed and hasattr(self._client, 'close'):
             import asyncio
             try:
@@ -316,15 +515,34 @@ class VariantClientAsync(AbstractClientAsync[VariantResponse]):
         **kwargs
     ) -> Optional[VariantResponse]:
         """
-        Get variant information by ID
+        Asynchronously get variant information by ID.
+        
+        This method retrieves detailed information about a specific variant using its identifier.
+        The variant ID can be in various formats including HGVS notation, rsID, or genomic coordinates.
         
         Args:
-            variant_id: The variant identifier (e.g. "chr7:g.140453134T>C")
-            fields: Specific fields to return
-            **kwargs: Additional arguments passed to the underlying client
-            
+            variant_id: The variant identifier (e.g. "chr7:g.140453134T>C", "rs58991260")
+            fields: Specific fields to return. Can be:
+                   - "all" (default): Return all available fields
+                   - A list of field names: Return only specified fields
+                   - A comma-separated string: Return only specified fields
+            **kwargs: Additional arguments passed to the underlying client:
+                     - size: Maximum number of results to return
+                     - from_: Starting position for pagination
+                     - sort: Fields to sort by
+                     - facets: Fields to compute facets for
+                     
         Returns:
             VariantResponse object containing the variant information or None if not found
+            
+        Example:
+            ```python
+            # Get a variant with all fields
+            variant = await client.getvariant("chr7:g.140453134T>C")
+            
+            # Get specific fields only
+            variant = await client.getvariant("rs58991260", fields=["cadd.phred", "dbsnp.rsid"])
+            ```
         """
         result = await self._client.getvariant(variant_id, fields=fields, **kwargs)
         if result is None:
@@ -338,15 +556,41 @@ class VariantClientAsync(AbstractClientAsync[VariantResponse]):
         **kwargs
     ) -> List[VariantResponse]:
         """
-        Get information for multiple variants
+        Asynchronously get information for multiple variants in a single request.
+        
+        This method efficiently retrieves information for multiple variants in a single API call.
+        It supports various input formats and can handle large numbers of variants.
         
         Args:
-            variant_ids: List of variant identifiers or comma-separated string
-            fields: Specific fields to return
-            **kwargs: Additional arguments passed to the underlying client
-            
+            variant_ids: List of variant identifiers or comma-separated string.
+                        Can include HGVS notations, rsIDs, or genomic coordinates.
+            fields: Specific fields to return. Can be:
+                   - "all" (default): Return all available fields
+                   - A list of field names: Return only specified fields
+                   - A comma-separated string: Return only specified fields
+            **kwargs: Additional arguments passed to the underlying client:
+                     - size: Maximum number of results to return
+                     - from_: Starting position for pagination
+                     - sort: Fields to sort by
+                     - facets: Fields to compute facets for
+                     
         Returns:
-            List of VariantResponse objects
+            List of VariantResponse objects, one for each variant found
+            
+        Example:
+            ```python
+            # Get multiple variants using a list
+            variants = await client.getvariants(["chr7:g.140453134T>C", "rs58991260"])
+            
+            # Get multiple variants using a comma-separated string
+            variants = await client.getvariants("chr7:g.140453134T>C,rs58991260")
+            
+            # Get specific fields for multiple variants
+            variants = await client.getvariants(
+                ["chr7:g.140453134T>C", "rs58991260"],
+                fields=["cadd.phred", "dbsnp.rsid"]
+            )
+            ```
         """
         if isinstance(variant_ids, str):
             variant_ids = variant_ids.split(",")
