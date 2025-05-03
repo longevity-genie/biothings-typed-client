@@ -1,0 +1,28 @@
+[project]
+name = "biothings-typed-client"
+version = "0.0.1"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "antonkulaga", email = "antonkulaga@gmail.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "biothings-client>=0.4.1",
+    "pydantic>=2.11.4",
+    "pandas>=2.1.1",
+    "PyLD>=2.0.4"
+]
+
+[project.scripts]
+biothings-typed-client = "biothings_typed_client:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.26.0",
+]
