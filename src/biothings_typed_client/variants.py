@@ -1,7 +1,5 @@
-from typing import Any, Dict, List, Optional, Union, Generator
+from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, Field, ConfigDict
-from biothings_client import get_client, get_async_client
-from pathlib import Path
 import pandas as pd
 from .abstract_client import AbstractClient, AbstractClientAsync
 
@@ -28,6 +26,44 @@ class CADDScore(BaseModel):
     consequence: Optional[Union[str, List[str]]] = Field(default=None, description="Variant consequence")
     consdetail: Optional[Union[str, List[str]]] = Field(default=None, description="Detailed consequence")
     type: Optional[str] = Field(default=None, description="Variant type")
+    
+    # Additional fields from example
+    alt: Optional[str] = Field(default=None, description="Alternative allele")
+    anc: Optional[str] = Field(default=None, description="Ancestral allele")
+    annotype: Optional[Union[str, List[str]]] = Field(default=None, description="Annotation type")
+    bstatistic: Optional[float] = Field(default=None, description="B-statistic score")
+    chmm: Optional[Dict[str, float]] = Field(default=None, description="Chromatin state predictions")
+    chrom: Optional[Union[str, int]] = Field(default=None, description="Chromosome")
+    conscore: Optional[float] = Field(default=None, description="Conservation score")
+    cpg: Optional[float] = Field(default=None, description="CpG island score")
+    dna: Optional[Dict[str, float]] = Field(default=None, description="DNA structure predictions")
+    encode: Optional[Dict[str, Any]] = Field(default=None, description="ENCODE data")
+    esp: Optional[Dict[str, float]] = Field(default=None, description="ESP allele frequencies")
+    exon: Optional[str] = Field(default=None, description="Exon number")
+    fitcons: Optional[float] = Field(default=None, description="FITCONS score")
+    gc: Optional[float] = Field(default=None, description="GC content")
+    gene: Optional[Union[Dict[str, Any], List[Dict[str, Any]]]] = Field(default=None, description="Gene information")
+    gerp: Optional[Dict[str, float]] = Field(default=None, description="GERP scores")
+    grantham: Optional[float] = Field(default=None, description="Grantham score")
+    isderived: Optional[str] = Field(default=None, description="Is derived allele")
+    isknownvariant: Optional[str] = Field(default=None, description="Is known variant")
+    istv: Optional[str] = Field(default=None, description="Is TV")
+    length: Optional[int] = Field(default=None, description="Variant length")
+    mapability: Optional[Dict[str, int]] = Field(default=None, description="Mapability scores")
+    min_dist_tse: Optional[int] = Field(default=None, description="Min distance to TSE")
+    min_dist_tss: Optional[int] = Field(default=None, description="Min distance to TSS")
+    mutindex: Optional[float] = Field(default=None, description="Mutation index")
+    naa: Optional[str] = Field(default=None, description="New amino acid")
+    oaa: Optional[str] = Field(default=None, description="Original amino acid")
+    phast_cons: Optional[Dict[str, float]] = Field(default=None, description="PhastCons scores")
+    phylop: Optional[Dict[str, float]] = Field(default=None, description="PhyloP scores")
+    polyphen: Optional[Dict[str, Any]] = Field(default=None, description="PolyPhen predictions")
+    pos: Optional[int] = Field(default=None, description="Position")
+    rawscore: Optional[float] = Field(default=None, description="Raw score")
+    ref: Optional[str] = Field(default=None, description="Reference allele")
+    segway: Optional[str] = Field(default=None, description="Segway annotation")
+    sift: Optional[Dict[str, Any]] = Field(default=None, description="SIFT predictions")
+    type: Optional[str] = Field(default=None, description="Variant type")
 
 class ClinVarAnnotation(BaseModel):
     """ClinVar variant annotations"""
@@ -41,6 +77,22 @@ class ClinVarAnnotation(BaseModel):
     phenotype_id: Optional[List[str]] = Field(default=None, description="Phenotype IDs")
     origin: Optional[List[str]] = Field(default=None, description="Allele origin")
     conditions: Optional[List[Dict[str, Any]]] = Field(default=None, description="Associated conditions")
+    
+    # Additional fields from example
+    license: Optional[str] = Field(default=None, description="License information")
+    allele_id: Optional[int] = Field(default=None, description="Allele ID")
+    alt: Optional[str] = Field(default=None, description="Alternative allele")
+    chrom: Optional[str] = Field(default=None, description="Chromosome")
+    cytogenic: Optional[str] = Field(default=None, description="Cytogenic location")
+    gene: Optional[Dict[str, Any]] = Field(default=None, description="Gene information")
+    hg19: Optional[GenomicLocation] = Field(default=None, description="HG19 genomic location")
+    hg38: Optional[GenomicLocation] = Field(default=None, description="HG38 genomic location")
+    hgvs: Optional[Dict[str, List[str]]] = Field(default=None, description="HGVS notations")
+    rcv: Optional[Union[Dict[str, Any], List[Dict[str, Any]]]] = Field(default=None, description="RCV information")
+    ref: Optional[str] = Field(default=None, description="Reference allele")
+    rsid: Optional[str] = Field(default=None, description="dbSNP rs ID")
+    type: Optional[str] = Field(default=None, description="Variant type")
+    variant_id: Optional[int] = Field(default=None, description="Variant ID")
 
 class CosmicAnnotation(BaseModel):
     """COSMIC variant annotations"""
@@ -52,6 +104,15 @@ class CosmicAnnotation(BaseModel):
     primary_site: Optional[str] = Field(default=None, description="Primary site")
     primary_histology: Optional[str] = Field(default=None, description="Primary histology")
     mutation_description: Optional[str] = Field(default=None, description="Mutation description")
+    
+    # Additional fields from example
+    license: Optional[str] = Field(default=None, description="License information")
+    alt: Optional[str] = Field(default=None, description="Alternative allele")
+    chrom: Optional[str] = Field(default=None, description="Chromosome")
+    hg19: Optional[GenomicLocation] = Field(default=None, description="HG19 genomic location")
+    mut_freq: Optional[float] = Field(default=None, description="Mutation frequency")
+    mut_nt: Optional[str] = Field(default=None, description="Mutation nucleotide change")
+    ref: Optional[str] = Field(default=None, description="Reference allele")
 
 class DbNSFPPrediction(BaseModel):
     """dbNSFP functional predictions"""
@@ -119,7 +180,7 @@ class VariantResponse(BaseModel):
     id: str = Field(description="Variant identifier", validation_alias="_id")
     version: int = Field(description="Version number", validation_alias="_version")
     chrom: str = Field(description="Chromosome number")
-    hg19: GenomicLocation = Field(description="HG19 genomic location")
+    hg19: Optional[GenomicLocation] = Field(default=None, description="HG19 genomic location")
     vcf: VCFInfo = Field(description="VCF information")
     
     # Typed optional annotation fields
@@ -151,8 +212,8 @@ class VariantResponse(BaseModel):
 class VariantClient(AbstractClient[VariantResponse]):
     """A typed wrapper around the BioThings variant client (synchronous)"""
     
-    def __init__(self):
-        super().__init__("variant")
+    def __init__(self, caching: bool = True):
+        super().__init__("variant", caching=caching)
         
     def _response_model(self) -> type[VariantResponse]:
         return VariantResponse
@@ -160,7 +221,7 @@ class VariantClient(AbstractClient[VariantResponse]):
     def getvariant(
         self,
         variant_id: str,
-        fields: Optional[Union[List[str], str]] = None,
+        fields: Optional[Union[List[str], str]] = "all",
         **kwargs
     ) -> Optional[VariantResponse]:
         """
@@ -182,7 +243,7 @@ class VariantClient(AbstractClient[VariantResponse]):
     def getvariants(
         self,
         variant_ids: Union[str, List[str], tuple],
-        fields: Optional[Union[List[str], str]] = None,
+        fields: Optional[Union[List[str], str]] = "all",
         **kwargs
     ) -> List[VariantResponse]:
         """
@@ -204,117 +265,11 @@ class VariantClient(AbstractClient[VariantResponse]):
         results = self._client.getvariants(variant_ids, fields=fields, **kwargs)
         return [VariantResponse.model_validate(result) for result in results]
 
-    def query(
-        self,
-        q: str,
-        fields: Optional[Union[List[str], str]] = None,
-        size: int = 10,
-        skip: int = 0,
-        sort: Optional[str] = None,
-        species: Optional[Union[List[str], str]] = None,
-        email: Optional[str] = None,
-        as_dataframe: bool = False,
-        df_index: bool = True,
-        **kwargs
-    ) -> Union[Dict[str, Any], pd.DataFrame]:
-        """
-        Query variants
-        
-        Args:
-            q: Query string
-            fields: Specific fields to return
-            size: Maximum number of results to return (max 1000)
-            skip: Number of results to skip
-            sort: Sort field, prefix with '-' for descending order
-            species: Species names or taxonomy ids
-            email: User email for tracking usage
-            as_dataframe: Return results as pandas DataFrame
-            df_index: Index DataFrame by query (only if as_dataframe=True)
-            **kwargs: Additional arguments passed to the underlying client
-            
-        Returns:
-            Query results as a dictionary or pandas DataFrame
-        """
-        return self._client.query(
-            q,
-            fields=fields,
-            size=size,
-            skip=skip,
-            sort=sort,
-            species=species,
-            email=email,
-            as_dataframe=as_dataframe,
-            df_index=df_index,
-            **kwargs
-        )
-
-    def querymany(
-        self,
-        query_list: Union[str, List[str], tuple],
-        scopes: Optional[Union[List[str], str]] = None,
-        fields: Optional[Union[List[str], str]] = None,
-        species: Optional[Union[List[str], str]] = None,
-        email: Optional[str] = None,
-        as_dataframe: bool = False,
-        df_index: bool = True,
-        **kwargs
-    ) -> Union[List[Dict[str, Any]], pd.DataFrame]:
-        """
-        Query for many variants
-        
-        Args:
-            query_list: List of query terms or comma-separated string
-            scopes: Fields to search in
-            fields: Fields to return
-            species: Species names or taxonomy ids
-            email: User email for tracking usage
-            as_dataframe: Return results as pandas DataFrame
-            df_index: Index DataFrame by query (only if as_dataframe=True)
-            **kwargs: Additional arguments passed to the underlying client
-            
-        Returns:
-            List of query results or pandas DataFrame
-        """
-        if isinstance(query_list, str):
-            query_list = query_list.split(",")
-        elif isinstance(query_list, tuple):
-            query_list = list(query_list)
-            
-        return self._client.querymany(
-            query_list,
-            scopes=scopes,
-            fields=fields,
-            species=species,
-            email=email,
-            **kwargs
-        )
-
-    def get_fields(self, search_term: Optional[str] = None) -> Dict[str, Any]:
-        """
-        Get available fields that can be used for queries
-        
-        Args:
-            search_term: Optional term to filter fields
-            
-        Returns:
-            Dictionary of available fields and their descriptions
-        """
-        return self._client.get_fields(search_term)
-
-    def metadata(self) -> Dict[str, Any]:
-        """
-        Get metadata about the variant database
-        
-        Returns:
-            Dictionary containing database metadata
-        """
-        return self._client.metadata()
-
 class VariantClientAsync(AbstractClientAsync[VariantResponse]):
     """A typed wrapper around the BioThings variant client (asynchronous)"""
     
-    def __init__(self):
-        super().__init__("variant")
+    def __init__(self, caching: bool = True):
+        super().__init__("variant", caching=caching)
         
     def _response_model(self) -> type[VariantResponse]:
         return VariantResponse
@@ -357,7 +312,7 @@ class VariantClientAsync(AbstractClientAsync[VariantResponse]):
     async def getvariant(
         self,
         variant_id: str,
-        fields: Optional[Union[List[str], str]] = None,
+        fields: Optional[Union[List[str], str]] = "all",
         **kwargs
     ) -> Optional[VariantResponse]:
         """
@@ -379,7 +334,7 @@ class VariantClientAsync(AbstractClientAsync[VariantResponse]):
     async def getvariants(
         self,
         variant_ids: Union[str, List[str], tuple],
-        fields: Optional[Union[List[str], str]] = None,
+        fields: Optional[Union[List[str], str]] = "all",
         **kwargs
     ) -> List[VariantResponse]:
         """
@@ -400,140 +355,3 @@ class VariantClientAsync(AbstractClientAsync[VariantResponse]):
             
         results = await self._client.getvariants(variant_ids, fields=fields, **kwargs)
         return [VariantResponse.model_validate(result) for result in results]
-
-    async def query(
-        self,
-        q: str,
-        fields: Optional[Union[List[str], str]] = None,
-        size: int = 10,
-        skip: int = 0,
-        sort: Optional[str] = None,
-        species: Optional[Union[List[str], str]] = None,
-        email: Optional[str] = None,
-        as_dataframe: bool = False,
-        df_index: bool = True,
-        **kwargs
-    ) -> Union[Dict[str, Any], pd.DataFrame]:
-        """
-        Query variants
-        
-        Args:
-            q: Query string
-            fields: Specific fields to return
-            size: Maximum number of results to return (max 1000)
-            skip: Number of results to skip
-            sort: Sort field, prefix with '-' for descending order
-            species: Species names or taxonomy ids
-            email: User email for tracking usage
-            as_dataframe: Return results as pandas DataFrame
-            df_index: Index DataFrame by query (only if as_dataframe=True)
-            **kwargs: Additional arguments passed to the underlying client
-            
-        Returns:
-            Query results as a dictionary or pandas DataFrame
-        """
-        return await self._client.query(
-            q,
-            fields=fields,
-            size=size,
-            skip=skip,
-            sort=sort,
-            species=species,
-            email=email,
-            as_dataframe=as_dataframe,
-            df_index=df_index,
-            **kwargs
-        )
-
-    async def querymany(
-        self,
-        query_list: Union[str, List[str], tuple],
-        scopes: Optional[Union[List[str], str]] = None,
-        fields: Optional[Union[List[str], str]] = None,
-        species: Optional[Union[List[str], str]] = None,
-        email: Optional[str] = None,
-        as_dataframe: bool = False,
-        df_index: bool = True,
-        **kwargs
-    ) -> Union[List[Dict[str, Any]], pd.DataFrame]:
-        """
-        Query for many variants
-        
-        Args:
-            query_list: List of query terms or comma-separated string
-            scopes: Fields to search in
-            fields: Fields to return
-            species: Species names or taxonomy ids
-            email: User email for tracking usage
-            as_dataframe: Return results as pandas DataFrame
-            df_index: Index DataFrame by query (only if as_dataframe=True)
-            **kwargs: Additional arguments passed to the underlying client
-            
-        Returns:
-            List of query results or pandas DataFrame
-        """
-        if isinstance(query_list, str):
-            query_list = query_list.split(",")
-        elif isinstance(query_list, tuple):
-            query_list = list(query_list)
-            
-        return await self._client.querymany(
-            query_list,
-            scopes=scopes,
-            fields=fields,
-            species=species,
-            email=email,
-            **kwargs
-        )
-
-    async def get_fields(self, search_term: Optional[str] = None) -> Dict[str, Any]:
-        """
-        Get available fields that can be used for queries
-        
-        Args:
-            search_term: Optional term to filter fields
-            
-        Returns:
-            Dictionary of available fields and their descriptions
-        """
-        return await self._client.get_fields(search_term)
-
-    async def metadata(self) -> Dict[str, Any]:
-        """
-        Get metadata about the variant database
-        
-        Returns:
-            Dictionary containing database metadata
-        """
-        return await self._client.metadata()
-
-if __name__ == "__main__":
-    # Example usage for sync client
-    client = VariantClient()
-    variant = client.getvariant("chr7:g.140453134T>C")
-    if variant:
-        print(f"Variant ID: {variant.get_variant_id()}")
-        print(f"Has clinical significance: {variant.has_clinical_significance()}")
-        print(f"Has functional predictions: {variant.has_functional_predictions()}")
-        print("\nFull variant data:")
-        print(variant.model_dump_json(indent=2))
-    
-    # Example usage for async client
-    import asyncio
-    
-    async def main():
-        client = VariantClientAsync()
-        variant = await client.getvariant("chr7:g.140453134T>C")
-        if variant:
-            print(f"Variant ID: {variant.get_variant_id()}")
-            print(f"Has clinical significance: {variant.has_clinical_significance()}")
-            print(f"Has functional predictions: {variant.has_functional_predictions()}")
-            print("\nFull variant data:")
-            print(variant.model_dump_json(indent=2))
-        
-        # Example query
-        results = await client.query("dbnsfp.genename:cdk2", size=5)
-        print("\nQuery results:")
-        print(results)
-        
-    asyncio.run(main())

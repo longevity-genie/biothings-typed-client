@@ -7,8 +7,41 @@ T = TypeVar('T', bound=BaseModel)
 class AbstractClient(Generic[T]):
     """Abstract base class for BioThings clients (synchronous)"""
     
-    def __init__(self, api_name: str):
+    def __init__(self, api_name: str, caching: bool = True):
         self._client = get_client(api_name)
+        if caching:
+            self.set_caching()
+        
+    def set_caching(self) -> None:
+        """
+        Enable caching for the client.
+        This will cache responses from the API to improve performance.
+        """
+        self._client.set_caching()
+        
+    def stop_caching(self) -> None:
+        """
+        Disable caching for the client.
+        This will stop caching responses from the API.
+        """
+        self._client.stop_caching()
+        
+    def clear_cache(self) -> None:
+        """
+        Clear the client's cache.
+        This will remove all cached responses.
+        """
+        self._client.clear_cache()
+        
+    @property
+    def caching_enabled(self) -> bool:
+        """
+        Check if caching is enabled for the client.
+        
+        Returns:
+            bool: True if caching is enabled, False otherwise
+        """
+        return self._client.caching_enabled
         
     def get(self, id: Union[str, int], fields: Optional[Union[List[str], str]] = None, **kwargs) -> Optional[T]:
         """
@@ -165,9 +198,11 @@ class AbstractClient(Generic[T]):
 class AbstractClientAsync(Generic[T]):
     """Abstract base class for BioThings clients (asynchronous)"""
     
-    def __init__(self, api_name: str):
+    def __init__(self, api_name: str, caching: bool = True):
         self._client = get_async_client(api_name)
         self._closed = False
+        if caching:
+            self._client.set_caching()
         
     async def __aenter__(self):
         return self
@@ -204,6 +239,37 @@ class AbstractClientAsync(Generic[T]):
             finally:
                 self._closed = True
             
+    async def set_caching(self) -> None:
+        """
+        Enable caching for the client.
+        This will cache responses from the API to improve performance.
+        """
+        await self._client.set_caching()
+        
+    async def stop_caching(self) -> None:
+        """
+        Disable caching for the client.
+        This will stop caching responses from the API.
+        """
+        await self._client.stop_caching()
+        
+    async def clear_cache(self) -> None:
+        """
+        Clear the client's cache.
+        This will remove all cached responses.
+        """
+        await self._client.clear_cache()
+        
+    @property
+    def caching_enabled(self) -> bool:
+        """
+        Check if caching is enabled for the client.
+        
+        Returns:
+            bool: True if caching is enabled, False otherwise
+        """
+        return self._client.caching_enabled
+        
     async def get(self, id: Union[str, int], fields: Optional[Union[List[str], str]] = None, **kwargs) -> Optional[T]:
         """
         Get information by ID

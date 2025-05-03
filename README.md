@@ -1,5 +1,31 @@
 # BioThings Typed Client
 
+[![Tests](https://github.com/longevity-genie/biothings-typed-client/actions/workflows/tests.yml/badge.svg)](https://github.com/longevity-genie/biothings-typed-client/actions/workflows/tests.yml)
+[![PyPI version](https://badge.fury.io/py/biothings-typed-client.svg)](https://badge.fury.io/py/biothings-typed-client)
+
+## About BioThings.io
+
+[BioThings.io](https://biothings.io/) is a platform that provides a network of high-performance biomedical APIs and tools for building FAIR (Findable, Accessible, Interoperable, and Reusable) data services. The platform includes several key components:
+
+- **Core BioThings APIs**:
+  - MyGene.info - Gene Annotation Service
+  - MyVariant.info - Variant Annotation Service
+  - MyChem.info - Chemical and Drug Annotation Service
+  - MyDisease.info - Disease Annotation Service
+  - Taxonomy API - For querying taxonomic information
+
+- **Development Tools**:
+  - BioThings SDK - A Python-based toolkit for building high-performance data APIs
+  - BioThings Studio - A pre-configured environment for building and administering BioThings APIs
+
+- **Discovery and Integration Tools**:
+  - SmartAPI - A registry for semantically annotated APIs
+  - BioThings Explorer - A tool for exploring biological data through linked API services
+
+This typed client library is built on top of the BioThings ecosystem, providing type-safe access to these services through Python.
+
+## Project Description
+
 A strongly-typed Python wrapper around the [BioThings Client](https://github.com/biothings/biothings_client.py) library, providing type safety and better IDE support through Python's type hints and Pydantic models.
 
 ## Features
@@ -12,6 +38,13 @@ A strongly-typed Python wrapper around the [BioThings Client](https://github.com
 - **Compatibility**: Maintains full compatibility with the original BioThings client
 
 ## Installation
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/longevity-genie/biothings-typed-client.git
+cd biothings-typed-client
+```
 
 ### Using pip
 
@@ -98,6 +131,66 @@ async def main():
 asyncio.run(main())
 ```
 
+### Gene Client Examples
+
+#### Synchronous Gene Client
+
+```python
+from biothings_typed_client.genes import GeneClient
+
+# Initialize the client
+client = GeneClient()
+
+# Get a single gene
+gene = client.getgene("1017")  # Using Entrez ID
+if gene:
+    print(f"Gene ID: {gene.id}")
+    print(f"Symbol: {gene.symbol}")
+    print(f"Name: {gene.name}")
+
+# Get multiple genes
+genes = client.getgenes(["1017", "1018"])  # Using Entrez IDs
+for gene in genes:
+    print(f"Found gene: {gene.symbol} ({gene.name})")
+
+# Query genes
+results = client.query("symbol:CDK2", size=5)
+for hit in results["hits"]:
+    print(f"Found gene: {hit['symbol']} ({hit['name']})")
+
+# Batch query genes
+genes = client.querymany(["CDK2", "BRCA1"], scopes=["symbol"], size=1)
+for gene in genes:
+    print(f"Found gene: {gene['symbol']} ({gene['name']})")
+```
+
+#### Asynchronous Gene Client
+
+```python
+import asyncio
+from biothings_typed_client.genes import GeneClientAsync
+
+async def main():
+    # Initialize the client
+    client = GeneClientAsync()
+    
+    # Get a single gene
+    gene = await client.getgene("1017")  # Using Entrez ID
+    if gene:
+        print(f"Gene ID: {gene.id}")
+        print(f"Symbol: {gene.symbol}")
+        print(f"Name: {gene.name}")
+    
+    # Query genes
+    results = await client.query("symbol:CDK2", size=5)
+    print("\nQuery results:")
+    for hit in results["hits"]:
+        print(f"Found gene: {hit['symbol']} ({hit['name']})")
+
+# Run the async code
+asyncio.run(main())
+```
+
 ## Available Clients
 
 The library currently provides the following typed clients:
@@ -146,7 +239,11 @@ variant.has_functional_predictions()
 ### Running Tests
 
 ```bash
+# Basic test run
 pytest tests/
+
+# For more detailed output with uv
+uv run pytest -vvv
 ```
 
 ### Contributing

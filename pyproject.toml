@@ -1,6 +1,6 @@
 [project]
 name = "biothings-typed-client"
-version = "0.0.1"
+version = "0.0.2"
 description = "Add your description here"
 readme = "README.md"
 authors = [
@@ -8,7 +8,7 @@ authors = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "biothings-client>=0.4.1",
+    "biothings-client[caching]>=0.4.1",
     "pydantic>=2.11.4",
     "pandas>=2.1.1",
     "PyLD>=2.0.4",

@@ -1,6 +1,5 @@
 from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 from pydantic import BaseModel, Field, ConfigDict, field_validator
-from biothings_client import get_client, get_async_client
 from .abstract_client import AbstractClient, AbstractClientAsync
 
 if TYPE_CHECKING:
@@ -62,8 +61,8 @@ class GeneResponse(BaseModel):
 class GeneClient(AbstractClient[GeneResponse]):
     """A typed wrapper around the BioThings gene client (synchronous)"""
     
-    def __init__(self):
-        super().__init__("gene")
+    def __init__(self, caching: bool = True):
+        super().__init__("gene", caching=caching)
         
     def _response_model(self) -> type[GeneResponse]:
         return GeneResponse
@@ -115,117 +114,11 @@ class GeneClient(AbstractClient[GeneResponse]):
         results = self._client.getgenes(gene_ids, fields=fields, **kwargs)
         return [GeneResponse.model_validate(result) for result in results]
 
-    def query(
-        self,
-        q: str,
-        fields: Optional[Union[List[str], str]] = None,
-        size: int = 10,
-        skip: int = 0,
-        sort: Optional[str] = None,
-        species: Optional[Union[List[str], str]] = None,
-        email: Optional[str] = None,
-        as_dataframe: bool = False,
-        df_index: bool = True,
-        **kwargs
-    ) -> Union[Dict[str, Any], 'pd.DataFrame']:
-        """
-        Query genes
-        
-        Args:
-            q: Query string
-            fields: Specific fields to return
-            size: Maximum number of results to return (max 1000)
-            skip: Number of results to skip
-            sort: Sort field, prefix with '-' for descending order
-            species: Species names or taxonomy ids
-            email: User email for tracking usage
-            as_dataframe: Return results as pandas DataFrame
-            df_index: Index DataFrame by query (only if as_dataframe=True)
-            **kwargs: Additional arguments passed to the underlying client
-            
-        Returns:
-            Query results as a dictionary or pandas DataFrame
-        """
-        return self._client.query(
-            q,
-            fields=fields,
-            size=size,
-            skip=skip,
-            sort=sort,
-            species=species,
-            email=email,
-            as_dataframe=as_dataframe,
-            df_index=df_index,
-            **kwargs
-        )
-
-    def querymany(
-        self,
-        query_list: Union[str, List[str], tuple],
-        scopes: Optional[Union[List[str], str]] = None,
-        fields: Optional[Union[List[str], str]] = None,
-        species: Optional[Union[List[str], str]] = None,
-        email: Optional[str] = None,
-        as_dataframe: bool = False,
-        df_index: bool = True,
-        **kwargs
-    ) -> Union[List[Dict[str, Any]], 'pd.DataFrame']:
-        """
-        Query for many genes
-        
-        Args:
-            query_list: List of query terms or comma-separated string
-            scopes: Fields to search in
-            fields: Fields to return
-            species: Species names or taxonomy ids
-            email: User email for tracking usage
-            as_dataframe: Return results as pandas DataFrame
-            df_index: Index DataFrame by query (only if as_dataframe=True)
-            **kwargs: Additional arguments passed to the underlying client
-            
-        Returns:
-            List of query results or pandas DataFrame
-        """
-        if isinstance(query_list, str):
-            query_list = query_list.split(",")
-        elif isinstance(query_list, tuple):
-            query_list = list(query_list)
-            
-        return self._client.querymany(
-            query_list,
-            scopes=scopes,
-            fields=fields,
-            species=species,
-            email=email,
-            **kwargs
-        )
-
-    def get_fields(self, search_term: Optional[str] = None) -> Dict[str, Any]:
-        """
-        Get available fields that can be used for queries
-        
-        Args:
-            search_term: Optional term to filter fields
-            
-        Returns:
-            Dictionary of available fields and their descriptions
-        """
-        return self._client.get_fields(search_term)
-
-    def metadata(self) -> Dict[str, Any]:
-        """
-        Get metadata about the gene database
-        
-        Returns:
-            Dictionary containing database metadata
-        """
-        return self._client.metadata()
-
 class GeneClientAsync(AbstractClientAsync[GeneResponse]):
     """A typed wrapper around the BioThings gene client (asynchronous)"""
     
-    def __init__(self):
-        super().__init__("gene")
+    def __init__(self, caching: bool = True):
+        super().__init__("gene", caching=caching)
         
     def _response_model(self) -> type[GeneResponse]:
         return GeneResponse
@@ -311,140 +204,3 @@ class GeneClientAsync(AbstractClientAsync[GeneResponse]):
             
         results = await self._client.getgenes(gene_ids, fields=fields, **kwargs)
         return [GeneResponse.model_validate(result) for result in results]
-
-    async def query(
-        self,
-        q: str,
-        fields: Optional[Union[List[str], str]] = None,
-        size: int = 10,
-        skip: int = 0,
-        sort: Optional[str] = None,
-        species: Optional[Union[List[str], str]] = None,
-        email: Optional[str] = None,
-        as_dataframe: bool = False,
-        df_index: bool = True,
-        **kwargs
-    ) -> Union[Dict[str, Any], 'pd.DataFrame']:
-        """
-        Query genes
-        
-        Args:
-            q: Query string
-            fields: Specific fields to return
-            size: Maximum number of results to return (max 1000)
-            skip: Number of results to skip
-            sort: Sort field, prefix with '-' for descending order
-            species: Species names or taxonomy ids
-            email: User email for tracking usage
-            as_dataframe: Return results as pandas DataFrame
-            df_index: Index DataFrame by query (only if as_dataframe=True)
-            **kwargs: Additional arguments passed to the underlying client
-            
-        Returns:
-            Query results as a dictionary or pandas DataFrame
-        """
-        return await self._client.query(
-            q,
-            fields=fields,
-            size=size,
-            skip=skip,
-            sort=sort,
-            species=species,
-            email=email,
-            as_dataframe=as_dataframe,
-            df_index=df_index,
-            **kwargs
-        )
-
-    async def querymany(
-        self,
-        query_list: Union[str, List[str], tuple],
-        scopes: Optional[Union[List[str], str]] = None,
-        fields: Optional[Union[List[str], str]] = None,
-        species: Optional[Union[List[str], str]] = None,
-        email: Optional[str] = None,
-        as_dataframe: bool = False,
-        df_index: bool = True,
-        **kwargs
-    ) -> Union[List[Dict[str, Any]], 'pd.DataFrame']:
-        """
-        Query for many genes
-        
-        Args:
-            query_list: List of query terms or comma-separated string
-            scopes: Fields to search in
-            fields: Fields to return
-            species: Species names or taxonomy ids
-            email: User email for tracking usage
-            as_dataframe: Return results as pandas DataFrame
-            df_index: Index DataFrame by query (only if as_dataframe=True)
-            **kwargs: Additional arguments passed to the underlying client
-            
-        Returns:
-            List of query results or pandas DataFrame
-        """
-        if isinstance(query_list, str):
-            query_list = query_list.split(",")
-        elif isinstance(query_list, tuple):
-            query_list = list(query_list)
-            
-        return await self._client.querymany(
-            query_list,
-            scopes=scopes,
-            fields=fields,
-            species=species,
-            email=email,
-            **kwargs
-        )
-
-    async def get_fields(self, search_term: Optional[str] = None) -> Dict[str, Any]:
-        """
-        Get available fields that can be used for queries
-        
-        Args:
-            search_term: Optional term to filter fields
-            
-        Returns:
-            Dictionary of available fields and their descriptions
-        """
-        return await self._client.get_fields(search_term)
-
-    async def metadata(self) -> Dict[str, Any]:
-        """
-        Get metadata about the gene database
-        
-        Returns:
-            Dictionary containing database metadata
-        """
-        return await self._client.metadata()
-
-if __name__ == "__main__":
-    # Example usage for sync client
-    client = GeneClient()
-    gene = client.getgene(1017, fields="name,symbol,refseq")
-    if gene:
-        print(f"Gene ID: {gene.get_gene_id()}")
-        print(f"Has RefSeq: {gene.has_refseq()}")
-        print(f"Has Ensembl: {gene.has_ensembl()}")
-        print("\nFull gene data:")
-        print(gene.model_dump_json(indent=2))
-    
-    # Example usage for async client
-    import asyncio
-    
-    async def main():
-        client = GeneClientAsync()
-        gene = await client.getgene(1017, fields="name,symbol,refseq")
-        if gene:
-            print(f"Gene ID: {gene.get_gene_id()}")
-            print(f"Has RefSeq: {gene.has_refseq()}")
-            print(f"Has Ensembl: {gene.has_ensembl()}")
-            print("\nFull gene data:")
-            print(gene.model_dump_json(indent=2))
-        
-        # Example query
-        results = await client.query("symbol:cdk2", size=5)
-        print("\nQuery results:")
-        print(results)
-        
-    asyncio.run(main())
