@@ -569,12 +569,9 @@ variant.has_functional_predictions()
 ### Running Tests
 
 ```bash
-# Basic test run
-pytest tests/
-
-# For more detailed output with uv
 uv run pytest -vvv
 ```
+You can add -s to also get stdout
 
 ### Contributing
 
@@ -586,5 +583,18 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Acknowledgments
 
-- [BioThings](https://biothings.io/) for the original client library
-- [Pydantic](https://pydantic-docs.helpmanual.io/) for the data validation framework
+- [BioThings](https://biothings.io/) for the biothings API and original [client library](https://github.com/biothings/biothings_client.py)
+
+- This project is part of the [Longevity Genie](https://github.com/longevity-genie) organization, which develops open-source AI assistants and libraries for health, genetics, and longevity research.
+
+We are supported by:
+
+[![HEALES](images/heales.jpg)](https://heales.org/)
+
+*HEALES - Healthy Life Extension Society*
+
+and
+
+[![IBIMA](images/IBIMA.jpg)](https://ibima.med.uni-rostock.de/)
+
+[IBIMA - Institute for Biostatistics and Informatics in Medicine and Ageing Research](https://ibima.med.uni-rostock.de/)
