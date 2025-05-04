@@ -66,3 +66,16 @@ async def test_metadata_async(async_client: GeneClientAsync):
     assert metadata is not None
     assert "stats" in metadata
     assert "total" in metadata["stats"]
+
+@pytest.mark.asyncio
+async def test_getgene_async_ensembl_string_refseq(async_client: GeneClientAsync):
+    """Test async gene retrieval for Ensembl ID with single string RefSeq genomic ID."""
+    ensembl_id = "ENSECAG00000002212" # Known to return string for refseq.genomic
+    gene = await async_client.getgene(ensembl_id)
+    assert gene is not None
+    assert isinstance(gene, GeneResponse)
+    assert gene.id == "100050481" # MyGene resolves this Ensembl to Entrez ID
+    assert gene.taxid == 9796 # Cavia porcellus
+    assert gene.has_refseq()
+    assert isinstance(gene.refseq.genomic, list) # Validator should ensure it's a list
+    assert "NC_091700.1" in gene.refseq.genomic

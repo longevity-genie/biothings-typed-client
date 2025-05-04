@@ -69,3 +69,15 @@ def test_metadata_sync(sync_client: GeneClient):
     assert metadata is not None
     assert "stats" in metadata
     assert "total" in metadata["stats"]
+
+def test_getgene_sync_ensembl_string_refseq(sync_client: GeneClient):
+    """Test sync gene retrieval for Ensembl ID with single string RefSeq genomic ID."""
+    ensembl_id = "ENSECAG00000002212" # Known to return string for refseq.genomic
+    gene = sync_client.getgene(ensembl_id)
+    assert gene is not None
+    assert isinstance(gene, GeneResponse)
+    assert gene.id == "100050481" # MyGene resolves this Ensembl to Entrez ID
+    assert gene.taxid == 9796 # Cavia porcellus
+    assert gene.has_refseq()
+    assert isinstance(gene.refseq.genomic, list) # Validator should ensure it's a list
+    assert "NC_091700.1" in gene.refseq.genomic

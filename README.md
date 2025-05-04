@@ -8,19 +8,11 @@
 [BioThings.io](https://biothings.io/) is a platform that provides a network of high-performance biomedical APIs and tools for building FAIR (Findable, Accessible, Interoperable, and Reusable) data services. The platform includes several key components:
 
 - **Core BioThings APIs**:
-  - MyGene.info - Gene Annotation Service
-  - MyVariant.info - Variant Annotation Service
-  - MyChem.info - Chemical and Drug Annotation Service
-  - MyDisease.info - Disease Annotation Service
+  - [MyGene.info](https://mygene.info/) - Gene Annotation Service
+  - [MyVariant.info](https://myvariant.info/) - Variant Annotation Service
+  - [MyChem.info](https://mychem.info/) - Chemical and Drug Annotation Service
+  - [MyDisease.info](http://mydisease.info/) - Disease Annotation Service
   - Taxonomy API - For querying taxonomic information
-
-- **Development Tools**:
-  - BioThings SDK - A Python-based toolkit for building high-performance data APIs
-  - BioThings Studio - A pre-configured environment for building and administering BioThings APIs
-
-- **Discovery and Integration Tools**:
-  - SmartAPI - A registry for semantically annotated APIs
-  - BioThings Explorer - A tool for exploring biological data through linked API services
 
 This typed client library is built on top of the BioThings ecosystem, providing type-safe access to these services through Python.
 
@@ -30,11 +22,10 @@ A strongly-typed Python wrapper around the [BioThings Client](https://github.com
 
 ## Features
 
-- **Type Safety**: Strongly typed models for all BioThings data using Pydantic
-- **IDE Support**: Full autocompletion and type checking in modern IDEs
+- **Type Safety & Validation**: Leverages Pydantic models for runtime data validation and type checking.
+- **Enhanced IDE Support**: Full autocompletion and static analysis in modern IDEs
 - **Synchronous & Asynchronous**: Support for both sync and async operations
 - **Helper Methods**: Additional utility methods for common operations
-- **Validation**: Runtime type checking and data validation
 - **Compatibility**: Maintains full compatibility with the original BioThings client
 
 ## Installation
@@ -52,28 +43,34 @@ cd biothings-typed-client
 pip install biothings-typed-client
 ```
 
-### Using UV (Recommended)
+#### Setting Up for Development
 
-[UV](https://github.com/astral-sh/uv) is a fast Python package installer and resolver, written in Rust. It's designed to be a drop-in replacement for pip and pip-tools.
+If you want to contribute to this repository:
 
-1. Install UV (if you haven't already):
-   ```bash
-   curl -LsSf https://astral.sh/uv/install.sh | sh
-   ```
+1.  Clone the repository (if you haven't already):
+    ```bash
+    git clone https://github.com/longevity-genie/biothings-typed-client.git
+    cd biothings-typed-client
+    ```
 
-2. Install the package:
-   ```bash
-   uv sync
-   ```
+2.  Install UV:
+    ```bash
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    ```
 
-3. To create a virtual environment and install dependencies:
-   ```bash
-   uv venv
-   source .venv/bin/activate  # On Unix/macOS
-   # or
-   .venv\Scripts\activate  # On Windows
-   uv install biothings-typed-client
-   ```
+3.  Create and activate a virtual environment:
+    ```bash
+    uv venv
+    source .venv/bin/activate  # On Unix/macOS
+    # or
+    .venv\Scripts\activate  # On Windows
+    ```
+
+4.  Install all dependencies, including development tools:
+    ```bash
+    uv sync --all-extras
+    ```
+    This command reads the `pyproject.toml` file and installs the package in editable mode along with all its dependencies and optional dependencies (like those needed for testing and development).
 
 ## Quick Start
 
@@ -203,16 +200,15 @@ client = ChemClient()
 
 # Get a single chemical
 chem = client.getchem("ZRALSGWEFCBTJO-UHFFFAOYSA-N")  # Using InChI key
-if chem:
-    print(f"Chemical ID: {chem.id}")
-    print(f"Molecular Formula: {chem.pubchem.molecular_formula}")
-    print(f"SMILES: {chem.pubchem.smiles}")
-    print(f"Molecular Weight: {chem.pubchem.molecular_weight}")
-    print(f"XLogP: {chem.pubchem.xlogp}")
-    print(f"Hydrogen Bond Donors: {chem.pubchem.hydrogen_bond_donor_count}")
-    print(f"Hydrogen Bond Acceptors: {chem.pubchem.hydrogen_bond_acceptor_count}")
-    print(f"Rotatable Bonds: {chem.pubchem.rotatable_bond_count}")
-    print(f"Topological Polar Surface Area: {chem.pubchem.topological_polar_surface_area} Å²")
+print(f"Chemical ID: {chem.id}")
+print(f"Molecular Formula: {chem.pubchem.molecular_formula}")
+print(f"SMILES: {chem.pubchem.smiles}")
+print(f"Molecular Weight: {chem.pubchem.molecular_weight}")
+print(f"XLogP: {chem.pubchem.xlogp}")
+print(f"Hydrogen Bond Donors: {chem.pubchem.hydrogen_bond_donor_count}")
+print(f"Hydrogen Bond Acceptors: {chem.pubchem.hydrogen_bond_acceptor_count}")
+print(f"Rotatable Bonds: {chem.pubchem.rotatable_bond_count}")
+print(f"Topological Polar Surface Area: {chem.pubchem.topological_polar_surface_area} Å²")
 
 # Get multiple chemicals
 chems = client.getchems(["ZRALSGWEFCBTJO-UHFFFAOYSA-N", "RRUDCFGSUDOHDG-UHFFFAOYSA-N"])

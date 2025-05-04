@@ -7,12 +7,12 @@ if TYPE_CHECKING:
 
 class RefSeq(BaseModel):
     """RefSeq information for a gene"""
-    genomic: Optional[List[str]] = Field(default=None, description="Genomic RefSeq IDs")
+    genomic: Optional[Union[str, List[str]]] = Field(default=None, description="Genomic RefSeq IDs")
     protein: Optional[Union[str, List[str]]] = Field(default=None, description="Protein RefSeq IDs")
     rna: Optional[Union[str, List[str]]] = Field(default=None, description="RNA RefSeq IDs")
     translation: Optional[Union[Dict[str, str], List[Dict[str, str]]]] = Field(default=None, description="Protein-RNA translation pairs")
 
-    @field_validator('protein', 'rna', mode='before')
+    @field_validator('genomic', 'protein', 'rna', mode='before')
     @classmethod
     def ensure_list(cls, v):
         if v is None:
