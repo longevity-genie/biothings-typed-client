@@ -67,7 +67,7 @@ class ChemResponse(BaseModel):
     model_config = ConfigDict(extra='allow')
     
     id: str = Field(description="Chemical identifier (typically InChIKey)", validation_alias="_id")
-    version: int = Field(description="Version number of the data", validation_alias="_version")
+    version: int = Field(default=1, description="Version number of the data", validation_alias="_version")
     pubchem: Optional[PubChemInfo] = Field(default=None, description="Detailed PubChem information")
 
     def get_chem_id(self) -> str:

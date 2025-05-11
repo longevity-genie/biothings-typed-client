@@ -178,7 +178,7 @@ class VariantResponse(BaseModel):
     model_config = ConfigDict(extra='allow')
     
     id: str = Field(description="Variant identifier", validation_alias="_id")
-    version: int = Field(description="Version number", validation_alias="_version")
+    version: int = Field(default=1, description="Version number", validation_alias="_version")
     chrom: str = Field(description="Chromosome number")
     hg19: Optional[GenomicLocation] = Field(default=None, description="HG19 genomic location")
     vcf: VCFInfo = Field(description="VCF information")

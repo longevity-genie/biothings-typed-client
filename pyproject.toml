@@ -1,6 +1,6 @@
 [project]
 name = "biothings-typed-client"
-version = "0.0.3"
+version = "0.0.4"
 description = "A strongly-typed Python wrapper around the BioThings Client library, providing type safety and better IDE support through Python's type hints and Pydantic models."
 readme = "README.md"
 authors = [

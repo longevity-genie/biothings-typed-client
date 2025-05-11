@@ -11,7 +11,7 @@ class TaxonResponse(BaseModel):
     model_config = ConfigDict(extra='allow')
     
     id: str = Field(description="Taxon identifier", validation_alias="_id")
-    version: int = Field(description="Version number", validation_alias="_version")
+    version: int = Field(description="Version number of the data", validation_alias="_version")
     authority: Optional[List[str]] = Field(default=None, description="Taxonomic authority")
     common_name: Optional[str] = Field(default=None, description="Common name")
     genbank_common_name: Optional[str] = Field(default=None, description="GenBank common name")

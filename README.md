@@ -68,7 +68,7 @@ If you want to contribute to this repository:
 
 4.  Install all dependencies, including development tools:
     ```bash
-    uv sync --all-extras
+    uv sync
     ```
     This command reads the `pyproject.toml` file and installs the package in editable mode along with all its dependencies and optional dependencies (like those needed for testing and development).
 
