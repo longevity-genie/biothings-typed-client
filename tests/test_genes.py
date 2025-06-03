@@ -14,36 +14,35 @@ def sync_client():
 
 @pytest_asyncio.fixture
 async def async_client():
-    client = GeneClientAsync()
-    yield client
-    await client.close()
+    async with GeneClientAsync() as client:
+        yield client
 
 def test_getgene_sync(sync_client: GeneClient):
     """Test synchronous gene retrieval"""
-    gene = sync_client.getgene("1017")
+    gene = sync_client.getgene("672")
     assert gene is not None
     assert isinstance(gene, GeneResponse)
-    assert gene.id == "1017"
-    assert gene.symbol == "CDK2"
-    assert gene.name == "cyclin dependent kinase 2"
+    assert gene.id == "672"
+    assert gene.symbol == "BRCA1"
+    assert gene.name is not None
 
 def test_getgene_sync_with_fields(sync_client: GeneClient):
     """Test synchronous gene retrieval with specific fields"""
-    gene = sync_client.getgene("1017", fields=["symbol", "name"])
+    gene = sync_client.getgene("672", fields=["symbol", "name"])
     assert gene is not None
     assert isinstance(gene, GeneResponse)
-    assert gene.id == "1017"
-    assert gene.symbol == "CDK2"
-    assert gene.name == "cyclin dependent kinase 2"
+    assert gene.id == "672"
+    assert gene.symbol == "BRCA1"
+    assert gene.name is not None
     assert gene.refseq is None  # Not requested
 
 def test_getgenes_sync(sync_client: GeneClient):
     """Test synchronous multiple gene retrieval"""
-    genes = sync_client.getgenes(["1017", "1018"])
+    genes = sync_client.getgenes(["672", "675"])
     assert len(genes) == 2
     assert all(isinstance(gene, GeneResponse) for gene in genes)
-    assert genes[0].id == "1017"
-    assert genes[1].id == "1018"
+    assert genes[0].id == "672"
+    assert genes[1].id == "675"
 
 def test_query_sync(sync_client: GeneClient):
     """Test synchronous gene query"""

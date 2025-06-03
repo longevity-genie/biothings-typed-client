@@ -489,24 +489,16 @@ class VariantClientAsync(AbstractClientAsync[VariantResponse]):
         Cleanup when the object is deleted.
         
         This method ensures that resources are properly cleaned up even if the client
-        is not explicitly closed. It attempts to close the client in a safe manner,
-        handling both running and non-running event loops.
+        is not explicitly closed. However, to avoid "coroutine was never awaited" warnings,
+        async resource cleanup is not performed during garbage collection.
         """
-        if not self._closed and hasattr(self._client, 'close'):
-            import asyncio
-            try:
-                loop = asyncio.get_event_loop()
-                if loop.is_running():
-                    # If loop is running, create a task to close the client
-                    loop.create_task(self._client.close())
-                else:
-                    # If loop is not running, run the close operation
-                    loop.run_until_complete(self._client.close())
-            except Exception:
-                # Ignore any errors during cleanup
-                pass
-            finally:
-                self._closed = True
+        if not self._closed:
+            # Mark as closed to prevent further cleanup attempts
+            self._closed = True
+            
+            # Don't try to close async resources during garbage collection
+            # This can cause "coroutine was never awaited" warnings
+            # Proper cleanup should be done via explicit close() calls or context managers
             
     async def getvariant(
         self,

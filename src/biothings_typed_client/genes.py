@@ -181,41 +181,6 @@ class GeneClientAsync(AbstractClientAsync[GeneResponse]):
         
     def _response_model(self) -> type[GeneResponse]:
         return GeneResponse
-
-    async def __aenter__(self):
-        return self
-        
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.close()
-            
-    async def close(self):
-        """Close the client connection"""
-        if not self._closed and hasattr(self._client, 'close'):
-            try:
-                await self._client.close()
-            except Exception:
-                # Ignore any errors during cleanup
-                pass
-            finally:
-                self._closed = True
-                
-    def __del__(self):
-        """Cleanup when the object is deleted"""
-        if not self._closed and hasattr(self._client, 'close'):
-            import asyncio
-            try:
-                loop = asyncio.get_event_loop()
-                if loop.is_running():
-                    # If loop is running, create a task to close the client
-                    loop.create_task(self._client.close())
-                else:
-                    # If loop is not running, run the close operation
-                    loop.run_until_complete(self._client.close())
-            except Exception:
-                # Ignore any errors during cleanup
-                pass
-            finally:
-                self._closed = True
             
     async def getgene(
         self,

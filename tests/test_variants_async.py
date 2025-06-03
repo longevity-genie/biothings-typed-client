@@ -8,9 +8,8 @@ logger.setLevel(logging.DEBUG)
 
 @pytest_asyncio.fixture
 async def async_client():
-    client = VariantClientAsync()
-    yield client
-    await client.close()
+    async with VariantClientAsync() as client:
+        yield client
 
 @pytest.mark.asyncio
 async def test_getvariant_async(async_client: VariantClientAsync):

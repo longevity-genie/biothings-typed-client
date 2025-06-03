@@ -9,9 +9,8 @@ logger.setLevel(logging.DEBUG)
 @pytest_asyncio.fixture
 async def async_client():
     """Fixture providing an asynchronous chem client"""
-    client = ChemClientAsync()
-    yield client
-    await client.close()
+    async with ChemClientAsync() as client:
+        yield client
 
 @pytest.mark.asyncio
 async def test_getchem_async(async_client: ChemClientAsync):

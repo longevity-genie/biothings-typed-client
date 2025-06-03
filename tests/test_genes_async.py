@@ -5,9 +5,8 @@ from biothings_typed_client.genes import GeneClientAsync, GeneResponse
 @pytest_asyncio.fixture
 async def async_client():
     """Fixture providing an asynchronous gene client"""
-    client = GeneClientAsync()
-    yield client
-    await client.close()
+    async with GeneClientAsync() as client:
+        yield client
 
 @pytest.mark.asyncio
 async def test_getgene_async(async_client: GeneClientAsync):

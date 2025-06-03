@@ -299,15 +299,49 @@ class AbstractClient(Generic[T]):
         raise NotImplementedError("Subclasses must implement _response_model")
 
 class AbstractClientAsync(Generic[T]):
-    """Abstract base class for BioThings clients (asynchronous)"""
+    """Abstract base class for BioThings clients (asynchronous)
+    
+    For proper caching setup, use as an async context manager:
+        async with ClientAsync() as client:
+            result = await client.get("some_id")
+    
+    Or manually enable caching after instantiation:
+        client = ClientAsync()
+        await client.set_caching()
+        result = await client.get("some_id")
+    """
     
     def __init__(self, api_name: str, caching: bool = True):
         self._client = get_async_client(api_name)
         self._closed = False
+        self._enable_caching = caching
+    
+    @classmethod
+    async def create(cls, caching: bool = True):
+        """
+        Create and initialize an async client with caching properly set up.
+        
+        This is a convenience factory method for users who don't want to use
+        the async context manager pattern.
+        
+        Args:
+            caching: Whether to enable caching
+            
+        Returns:
+            Fully initialized async client
+            
+        Example:
+            client = await GeneClientAsync.create(caching=True)
+            result = await client.get("some_id")
+        """
+        instance = cls(caching=False)  # Don't auto-enable caching
         if caching:
-            self._client.set_caching()
+            await instance.set_caching()
+        return instance
         
     async def __aenter__(self):
+        if self._enable_caching:
+            await self.set_caching()
         return self
         
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -326,21 +360,13 @@ class AbstractClientAsync(Generic[T]):
                 
     def __del__(self):
         """Cleanup when the object is deleted"""
-        if not self._closed and hasattr(self._client, 'close'):
-            import asyncio
-            try:
-                loop = asyncio.get_event_loop()
-                if loop.is_running():
-                    # If loop is running, create a task to close the client
-                    loop.create_task(self._client.close())
-                else:
-                    # If loop is not running, run the close operation
-                    loop.run_until_complete(self._client.close())
-            except Exception:
-                # Ignore any errors during cleanup
-                pass
-            finally:
-                self._closed = True
+        if not self._closed:
+            # Mark as closed to prevent further cleanup attempts
+            self._closed = True
+            
+            # Don't try to close async resources during garbage collection
+            # This can cause "coroutine was never awaited" warnings
+            # Proper cleanup should be done via explicit close() calls or context managers
             
     async def set_caching(self) -> None:
         """
