@@ -1,5 +1,5 @@
 from typing import Any, Dict, List, Optional, Union
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, AliasChoices
 import pandas as pd
 
 from biothings_typed_client.abstract_client import AbstractClient, AbstractClientAsync
@@ -66,8 +66,8 @@ class ChemResponse(BaseModel):
     """
     model_config = ConfigDict(extra='allow')
     
-    id: str = Field(description="Chemical identifier (typically InChIKey)", validation_alias="_id")
-    version: int = Field(default=1, description="Version number of the data", validation_alias="_version")
+    id: str = Field(description="Chemical identifier (typically InChIKey)", validation_alias=AliasChoices("_id", "id"))
+    version: int = Field(default=1, description="Version number of the data", validation_alias=AliasChoices("_version", "version"))
     pubchem: Optional[PubChemInfo] = Field(default=None, description="Detailed PubChem information")
 
     def get_chem_id(self) -> str:

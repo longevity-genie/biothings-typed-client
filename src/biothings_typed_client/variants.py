@@ -1,5 +1,5 @@
 from typing import Any, Dict, List, Optional, Union
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, AliasChoices
 import pandas as pd
 from biothings_typed_client.abstract_client import AbstractClient, AbstractClientAsync
 
@@ -177,8 +177,8 @@ class VariantResponse(BaseModel):
     """Response model for variant information"""
     model_config = ConfigDict(extra='allow')
     
-    id: Optional[str] = Field(default=None, description="Variant identifier", validation_alias="_id")
-    version: Optional[int] = Field(default=1, description="Version number", validation_alias="_version")
+    id: Optional[str] = Field(default=None, description="Variant identifier", validation_alias=AliasChoices("_id", "id"))
+    version: Optional[int] = Field(default=1, description="Version number", validation_alias=AliasChoices("_version", "version"))
     chrom: Optional[str] = Field(default=None, description="Chromosome number")
     hg19: Optional[GenomicLocation] = Field(default=None, description="HG19 genomic location")
     vcf: Optional[VCFInfo] = Field(default=None, description="VCF information")

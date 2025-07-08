@@ -367,6 +367,7 @@ class AbstractClientAsync(Generic[T]):
             # Don't try to close async resources during garbage collection
             # This can cause "coroutine was never awaited" warnings
             # Proper cleanup should be done via explicit close() calls or context managers
+            # Warning suppression is handled at the pytest configuration level
             
     async def set_caching(self) -> None:
         """

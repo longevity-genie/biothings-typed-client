@@ -1,5 +1,5 @@
 from typing import Any, Dict, List, Optional, Union, Generator
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, AliasChoices
 from biothings_typed_client.abstract_client import AbstractClient, AbstractClientAsync
 
 class GeneInfo(BaseModel):
@@ -14,13 +14,13 @@ class WikiPathwaysInfo(BaseModel):
     id: str = Field(description="WikiPathways ID")
     pathway_name: str = Field(description="Pathway name")
     url: str = Field(description="Pathway URL")
-    license_info: str = Field(description="License information", validation_alias="_license")
+    license_info: str = Field(description="License information", validation_alias=AliasChoices("_license", "license"))
 
 class GenesetResponse(BaseModel):
     """Response model for geneset information"""
     model_config = ConfigDict(extra='allow')
     
-    id: str = Field(description="Geneset identifier", validation_alias="_id")
+    id: str = Field(description="Geneset identifier", validation_alias=AliasChoices("_id", "id"))
     name: str = Field(description="Geneset name")
     source: str = Field(description="Source database")
     taxid: str = Field(description="Taxonomy ID")

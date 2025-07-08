@@ -1,5 +1,5 @@
 from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from pydantic import BaseModel, Field, ConfigDict, field_validator, AliasChoices
 from biothings_typed_client.abstract_client import AbstractClient, AbstractClientAsync
 
 if TYPE_CHECKING:
@@ -34,8 +34,8 @@ class GeneResponse(BaseModel):
     """Response model for gene information"""
     model_config = ConfigDict(extra='allow')
     
-    id: str = Field(description="Gene identifier", validation_alias="_id")
-    score: Optional[float] = Field(default=None, description="Search score", validation_alias="_score")
+    id: str = Field(description="Gene identifier", validation_alias=AliasChoices("_id", "id"))
+    score: Optional[float] = Field(default=None, description="Search score", validation_alias=AliasChoices("_score", "score"))
     name: Optional[str] = Field(default=None, description="Gene name")
     symbol: Optional[str] = Field(default=None, description="Gene symbol")
     refseq: Optional[RefSeq] = Field(default=None, description="RefSeq information")

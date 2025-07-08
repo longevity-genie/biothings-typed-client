@@ -1,5 +1,5 @@
 from typing import Any, Dict, List, Optional, Union
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, AliasChoices
 
 from biothings_typed_client.abstract_client import AbstractClient, AbstractClientAsync
 
@@ -7,8 +7,8 @@ class TaxonResponse(BaseModel):
     """Response model for taxon information"""
     model_config = ConfigDict(extra='allow')
     
-    id: str = Field(description="Taxon identifier", validation_alias="_id", serialization_alias="_id")
-    version: int = Field(description="Version number of the data", validation_alias="_version", serialization_alias="_version")
+    id: str = Field(description="Taxon identifier", validation_alias=AliasChoices("_id", "id"), serialization_alias="_id")
+    version: int = Field(description="Version number of the data", validation_alias=AliasChoices("_version", "version"), serialization_alias="_version")
     authority: Optional[List[str]] = Field(default=None, description="Taxonomic authority")
     common_name: Optional[str] = Field(default=None, description="Common name")
     genbank_common_name: Optional[str] = Field(default=None, description="GenBank common name")
