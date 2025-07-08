@@ -14,7 +14,7 @@ class WikiPathwaysInfo(BaseModel):
     id: str = Field(description="WikiPathways ID")
     pathway_name: str = Field(description="Pathway name")
     url: str = Field(description="Pathway URL")
-    _license: str = Field(description="License information")
+    license_info: str = Field(description="License information", validation_alias="_license")
 
 class GenesetResponse(BaseModel):
     """Response model for geneset information"""
@@ -52,7 +52,7 @@ class GenesetResponse(BaseModel):
 class GenesetClient(AbstractClient[GenesetResponse]):
     """A typed wrapper around the BioThings geneset client (synchronous)"""
     
-    def __init__(self, caching: bool = True):
+    def __init__(self, caching: bool = False):
         super().__init__("geneset", caching=caching)
         
     def _response_model(self) -> type[GenesetResponse]:
@@ -156,7 +156,7 @@ class GenesetClient(AbstractClient[GenesetResponse]):
 class GenesetClientAsync(AbstractClientAsync[GenesetResponse]):
     """A typed wrapper around the BioThings geneset client (asynchronous)"""
     
-    def __init__(self, caching: bool = True):
+    def __init__(self, caching: bool = False):
         super().__init__("geneset", caching=caching)
         
     def _response_model(self) -> type[GenesetResponse]:

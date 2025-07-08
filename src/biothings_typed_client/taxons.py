@@ -1,10 +1,7 @@
 from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, Field, ConfigDict
 
-try:
-    from .abstract_client import AbstractClient, AbstractClientAsync
-except ImportError:
-    from biothings_typed_client.abstract_client import AbstractClient, AbstractClientAsync
+from biothings_typed_client.abstract_client import AbstractClient, AbstractClientAsync
 
 class TaxonResponse(BaseModel):
     """Response model for taxon information"""
@@ -39,7 +36,7 @@ class TaxonResponse(BaseModel):
 class TaxonClient(AbstractClient[TaxonResponse]):
     """A typed wrapper around the BioThings taxon client (synchronous)"""
     
-    def __init__(self, caching: bool = True):
+    def __init__(self, caching: bool = False):
         super().__init__("taxon", caching=caching)
         
     def _response_model(self) -> type[TaxonResponse]:
@@ -95,7 +92,7 @@ class TaxonClient(AbstractClient[TaxonResponse]):
 class TaxonClientAsync(AbstractClientAsync[TaxonResponse]):
     """A typed wrapper around the BioThings taxon client (asynchronous)"""
     
-    def __init__(self, caching: bool = True):
+    def __init__(self, caching: bool = False):
         super().__init__("taxon", caching=caching)
         
     def _response_model(self) -> type[TaxonResponse]:

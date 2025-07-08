@@ -83,7 +83,7 @@ class GeneClient(AbstractClient[GeneResponse]):
         >>> genes = client.querymany(["CDK2", "BRCA1"], scopes=["symbol"], size=1)
     """
     
-    def __init__(self, caching: bool = True):
+    def __init__(self, caching: bool = False):
         super().__init__("gene", caching=caching)
         
     def _response_model(self) -> type[GeneResponse]:
@@ -176,7 +176,7 @@ class GeneClientAsync(AbstractClientAsync[GeneResponse]):
         >>>     genes = await client.querymany(["CDK2", "BRCA1"], scopes=["symbol"], size=1)
     """
     
-    def __init__(self, caching: bool = True):
+    def __init__(self, caching: bool = False):
         super().__init__("gene", caching=caching)
         
     def _response_model(self) -> type[GeneResponse]:

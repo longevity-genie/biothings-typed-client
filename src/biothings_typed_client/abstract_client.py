@@ -8,7 +8,7 @@ T = TypeVar('T', bound=BaseModel)
 class AbstractClient(Generic[T]):
     """Abstract base class for BioThings clients (synchronous)"""
     
-    def __init__(self, api_name: str, caching: bool = True):
+    def __init__(self, api_name: str, caching: bool = False):
         self._client = get_client(api_name)
         if caching:
             self.set_caching()
@@ -311,13 +311,13 @@ class AbstractClientAsync(Generic[T]):
         result = await client.get("some_id")
     """
     
-    def __init__(self, api_name: str, caching: bool = True):
+    def __init__(self, api_name: str, caching: bool = False):
         self._client = get_async_client(api_name)
         self._closed = False
         self._enable_caching = caching
     
     @classmethod
-    async def create(cls, caching: bool = True):
+    async def create(cls, caching: bool = False):
         """
         Create and initialize an async client with caching properly set up.
         

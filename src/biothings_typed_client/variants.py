@@ -261,12 +261,12 @@ class VariantClient(AbstractClient[VariantResponse]):
         ```
     """
     
-    def __init__(self, caching: bool = True):
+    def __init__(self, caching: bool = False):
         """
         Initialize the variant client.
         
         Args:
-            caching: Whether to enable response caching. Defaults to True.
+            caching: Whether to enable response caching. Defaults to False.
                     When enabled, responses are cached to improve performance for repeated queries.
         """
         super().__init__("variant", caching=caching)
@@ -429,12 +429,12 @@ class VariantClientAsync(AbstractClientAsync[VariantResponse]):
         ```
     """
     
-    def __init__(self, caching: bool = True):
+    def __init__(self, caching: bool = False):
         """
         Initialize the async variant client.
         
         Args:
-            caching: Whether to enable response caching. Defaults to True.
+            caching: Whether to enable response caching. Defaults to False.
                     When enabled, responses are cached to improve performance for repeated queries.
         """
         super().__init__("variant", caching=caching)

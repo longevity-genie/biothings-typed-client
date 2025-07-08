@@ -514,6 +514,235 @@ async def main():
 asyncio.run(main())
 ```
 
+## Command Line Interface (CLI)
+
+The library provides a comprehensive command-line interface that gives you access to all BioThings APIs directly from your terminal. The CLI supports both table and JSON output formats, field filtering, and caching.
+
+### Installation and Setup
+
+After installing the package, you'll have access to two CLI commands:
+
+- `biothings-typed-client` - Main API interface
+- `clear-cache` - Cache management utility
+
+### Basic Usage
+
+```bash
+# Show main help
+biothings-typed-client --help
+
+# Show help for a specific API
+biothings-typed-client gene --help
+biothings-typed-client chem --help
+biothings-typed-client variant --help
+biothings-typed-client geneset --help
+biothings-typed-client taxon --help
+```
+
+### Gene API Commands
+
+#### Get Single Gene Information
+
+```bash
+# Get gene by Entrez ID
+biothings-typed-client gene get 1017
+
+# Get gene by Ensembl ID  
+biothings-typed-client gene get ENSG00000123374
+
+# Get specific fields only
+biothings-typed-client gene get 1017 --fields "symbol,name,entrezgene"
+
+# Output as JSON
+biothings-typed-client gene get 1017 --format json
+
+# Enable caching
+biothings-typed-client gene get 1017 --cache
+```
+
+#### Get Multiple Genes
+
+```bash
+# Get multiple genes (comma-separated)
+biothings-typed-client gene list "1017,1018,1019"
+
+# With specific fields
+biothings-typed-client gene list "1017,1018" --fields "symbol,name" --format json
+```
+
+### Chemical API Commands
+
+#### Get Chemical Compound Information
+
+```bash
+# Get chemical by InChI Key
+biothings-typed-client chem get KTUFNOKKBVMGRW-UHFFFAOYSA-N
+
+# Get multiple chemicals
+biothings-typed-client chem list "KTUFNOKKBVMGRW-UHFFFAOYSA-N,XEFQLINVKFYRCS-UHFFFAOYSA-N"
+
+# Get specific PubChem fields
+biothings-typed-client chem get KTUFNOKKBVMGRW-UHFFFAOYSA-N --fields "pubchem.molecular_formula,pubchem.molecular_weight"
+```
+
+### Variant API Commands
+
+#### Get Variant Information
+
+```bash
+# Get variant by ID
+biothings-typed-client variant get "chr7:g.140453134T>C"
+
+# Get multiple variants
+biothings-typed-client variant list "chr7:g.140453134T>C,chr9:g.107620835G>A"
+
+# Get specific annotation fields
+biothings-typed-client variant get "chr7:g.140453134T>C" --fields "clinvar,cadd,dbsnp"
+
+# JSON output for programmatic use
+biothings-typed-client variant get "chr7:g.140453134T>C" --format json
+```
+
+### Geneset API Commands
+
+#### Get Geneset Information
+
+```bash
+# Get geneset by ID
+biothings-typed-client geneset get WP100
+
+# Get multiple genesets
+biothings-typed-client geneset list "WP100,WP101,WP102"
+
+# Get specific fields
+biothings-typed-client geneset get WP100 --fields "name,source,count,genes"
+```
+
+### Taxon API Commands
+
+#### Get Taxonomic Information
+
+```bash
+# Get human taxonomy info
+biothings-typed-client taxon get 9606
+
+# Get multiple taxa
+biothings-typed-client taxon list "9606,10090,7955"
+
+# Get specific fields
+biothings-typed-client taxon get 9606 --fields "scientific_name,common_name,rank"
+```
+
+### Global Options
+
+All commands support these options:
+
+- `--fields`, `-f`: Comma-separated list of fields to return
+- `--format`: Output format (`table` or `json`)
+- `--cache`: Enable response caching
+- `--help`: Show command help
+
+### Output Formats
+
+#### Table Format (Default)
+
+Beautiful, human-readable tables with colored output:
+
+```bash
+$ biothings-typed-client gene get 1017
+
+                                    Gene Information: 1017
+┏━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Field       ┃ Value                                                           ┃
+┡━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ ID          │ 1017                                                            │
+│ Symbol      │ CDK2                                                            │
+│ Name        │ cyclin dependent kinase 2                                       │
+│ Entrez Gene │ 1017                                                            │
+│ Taxonomy ID │ 9606                                                            │
+│ Summary     │ This gene encodes a member of a family of serine/threonine...   │
+└─────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+#### JSON Format
+
+Perfect for programmatic use and pipeline integration:
+
+```bash
+$ biothings-typed-client gene get 1017 --format json --fields "symbol,name,entrezgene"
+
+{
+  "id": "1017",
+  "score": null,
+  "name": "cyclin dependent kinase 2",
+  "symbol": "CDK2",
+  "refseq": null,
+  "taxid": null,
+  "entrezgene": 1017,
+  "ensembl": null,
+  "uniprot": null,
+  "summary": null,
+  "genomic_pos": null
+}
+```
+
+### Cache Management
+
+#### Clear Cache Files
+
+```bash
+# Clear cache in current directory
+clear-cache
+
+# Clear cache in specific directory
+clear-cache /path/to/cache/directory
+
+# Show help
+clear-cache --help
+```
+
+The cache cleaner removes files like:
+- `mychem_cache`
+- `mygene_cache`
+- `myvariant_cache`
+- `mygeneset_cache`
+- `mytaxon_cache`
+
+### Integration Examples
+
+#### Shell Scripting
+
+```bash
+#!/bin/bash
+
+# Get gene information and extract symbol
+SYMBOL=$(biothings-typed-client gene get 1017 --format json | jq -r '.symbol')
+echo "Gene symbol: $SYMBOL"
+
+# Process multiple genes
+for gene_id in 1017 1018 1019; do
+    echo "Processing gene $gene_id..."
+    biothings-typed-client gene get "$gene_id" --fields "symbol,name" --cache
+done
+```
+
+#### Pipeline Integration
+
+```bash
+# Get variant data and pipe to analysis script
+biothings-typed-client variant get "chr7:g.140453134T>C" --format json | python analyze_variant.py
+
+# Batch process with caching enabled
+biothings-typed-client gene list "$(cat gene_ids.txt | tr '\n' ',')" --cache --format json > gene_data.json
+```
+
+### Performance Tips
+
+1. **Use caching** (`--cache`) for repeated queries
+2. **Specify fields** (`--fields`) to reduce response size
+3. **Use JSON format** for programmatic processing
+4. **Batch requests** when possible using the `list` commands
+
 ## Available Clients
 
 The library currently provides the following typed clients:

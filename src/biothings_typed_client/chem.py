@@ -103,11 +103,11 @@ class ChemClient(AbstractClient[ChemResponse]):
     https://docs.mychem.info/en/latest/doc/data.html#available-fields
     """
     
-    def __init__(self, caching: bool = True):
+    def __init__(self, caching: bool = False):
         """Initialize the chem client.
         
         Args:
-            caching (bool): Whether to enable response caching. Defaults to True.
+            caching (bool): Whether to enable response caching. Defaults to False.
         """
         super().__init__("chem", caching=caching)
         
@@ -210,11 +210,11 @@ class ChemClientAsync(AbstractClientAsync[ChemResponse]):
     https://docs.mychem.info/en/latest/doc/data.html#available-fields
     """
     
-    def __init__(self, caching: bool = True):
+    def __init__(self, caching: bool = False):
         """Initialize the async chem client.
         
         Args:
-            caching (bool): Whether to enable response caching. Defaults to True.
+            caching (bool): Whether to enable response caching. Defaults to False.
         """
         super().__init__("chem", caching=caching)
         
