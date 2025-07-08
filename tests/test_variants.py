@@ -22,6 +22,19 @@ def test_getvariant_sync(sync_client: VariantClient):
     assert variant.hg19.start == 140453134
     assert variant.hg19.end == 140453134
 
+def test_getvariant_with_fields_sync(sync_client: VariantClient):
+    """Test getting a variant with specific fields using sync client"""
+    variant_id = "rs58991260"
+    fields = "dbsnp.rsid,dbsnp.vartype"
+    variant = sync_client.getvariant(variant_id, fields=fields)
+    assert variant is not None
+    # The API returns the canonical variant ID, not the query ID
+    assert variant.id is not None
+    assert hasattr(variant, 'dbsnp')
+    assert hasattr(variant.dbsnp, 'rsid')
+    assert hasattr(variant.dbsnp, 'vartype')
+    assert variant.dbsnp.rsid == variant_id
+
 def test_getvariants_sync(sync_client: VariantClient):
     """Test getting multiple variants using sync client"""
     variants = sync_client.getvariants(["chr7:g.140453134T>C", "chr9:g.107620835G>A"])

@@ -5,16 +5,16 @@ from biothings_typed_client.abstract_client import AbstractClient, AbstractClien
 
 class VCFInfo(BaseModel):
     """VCF information for a variant"""
-    alt: str = Field(description="Alternative allele")
-    position: str = Field(description="Position in the chromosome")
-    ref: str = Field(description="Reference allele")
+    alt: Optional[str] = Field(default=None, description="Alternative allele")
+    position: Optional[str] = Field(default=None, description="Position in the chromosome")
+    ref: Optional[str] = Field(default=None, description="Reference allele")
     filter: Optional[str] = Field(default=None, description="VCF FILTER value")
     qual: Optional[float] = Field(default=None, description="VCF QUAL value")
 
 class GenomicLocation(BaseModel):
     """Genomic location information"""
-    end: int = Field(description="End position")
-    start: int = Field(description="Start position")
+    end: Optional[int] = Field(default=None, description="End position")
+    start: Optional[int] = Field(default=None, description="Start position")
     strand: Optional[int] = Field(default=1, description="Strand (1 or -1)")
 
 class CADDScore(BaseModel):
@@ -129,8 +129,8 @@ class DbNSFPPrediction(BaseModel):
 
 class DbSNPAllele(BaseModel):
     """dbSNP allele information"""
-    allele: str = Field(description="Allele value")
-    freq: Dict[str, float] = Field(description="Frequency information")
+    allele: Optional[str] = Field(default=None, description="Allele value")
+    freq: Optional[Dict[str, float]] = Field(default=None, description="Frequency information")
 
 class DbSNPAnnotation(BaseModel):
     """dbSNP variant annotations"""
@@ -177,11 +177,11 @@ class VariantResponse(BaseModel):
     """Response model for variant information"""
     model_config = ConfigDict(extra='allow')
     
-    id: str = Field(description="Variant identifier", validation_alias="_id")
-    version: int = Field(default=1, description="Version number", validation_alias="_version")
-    chrom: str = Field(description="Chromosome number")
+    id: Optional[str] = Field(default=None, description="Variant identifier", validation_alias="_id")
+    version: Optional[int] = Field(default=1, description="Version number", validation_alias="_version")
+    chrom: Optional[str] = Field(default=None, description="Chromosome number")
     hg19: Optional[GenomicLocation] = Field(default=None, description="HG19 genomic location")
-    vcf: VCFInfo = Field(description="VCF information")
+    vcf: Optional[VCFInfo] = Field(default=None, description="VCF information")
     
     # Typed optional annotation fields
     cadd: Optional[CADDScore] = Field(default=None, description="CADD scores and predictions")
@@ -193,9 +193,11 @@ class VariantResponse(BaseModel):
     mutdb: Optional[MutDBAnnotation] = Field(default=None, description="MutDB annotations")
     snpeff: Optional[SnpEffAnnotation] = Field(default=None, description="SnpEff annotations")
 
-    def get_variant_id(self) -> str:
+    def get_variant_id(self) -> Optional[str]:
         """Get the variant identifier in a standardized format"""
-        return f"{self.chrom}:g.{self.vcf.position}{self.vcf.ref}>{self.vcf.alt}"
+        if self.chrom and self.vcf and self.vcf.position and self.vcf.ref and self.vcf.alt:
+            return f"{self.chrom}:g.{self.vcf.position}{self.vcf.ref}>{self.vcf.alt}"
+        return None
 
     def has_clinical_significance(self) -> bool:
         """Check if the variant has clinical significance information"""
